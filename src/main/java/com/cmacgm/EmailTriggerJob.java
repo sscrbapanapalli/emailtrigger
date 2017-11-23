@@ -164,7 +164,8 @@ public class EmailTriggerJob {
 		
 			
 			 Calendar start = Calendar.getInstance();
-			 start.setTime(startDateWise);
+			 start.setTime(endDateWise);
+			 start.add(Calendar.DATE, -7);
 			 Calendar end = Calendar.getInstance();
 			 end.setTime(endDateWise);
 			 buf.append("<b>Day Wise Summary Report: </b></br> <table border='1'>" + "<tr>" + "<th>Day</th><th>Total Index</th>"
