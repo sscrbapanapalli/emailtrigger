@@ -14,7 +14,6 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMessage.RecipientType;
 import javax.mail.internet.MimeMultipart;
 import javax.servlet.http.HttpServlet;
 
@@ -26,21 +25,23 @@ import com.sun.mail.util.MailSSLSocketFactory;
 public class SendMail extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
-	public Boolean SendMail(String subject, String toMail, String text) {
+	public Boolean SendMail(String subject, String text) {
 
 		Boolean mailsuccess = false;
 		try {
 
-			String toAdd = toMail;
-
+			
 			Boolean flag = true;
 			Session session;
 			Properties props = new Properties();
 			props.load(SendMail.class.getClassLoader().getResourceAsStream("config.properties"));
 			props.put("mail.transport.protocol", props.get("mail.transport.protocol"));
 			props.put("mail.smtp.host", props.get("mail.smtp.host"));
-			String fromAdd = (String) props.get("mail.fromAddress");
-
+			String fromAddress = (String) props.get("mail.fromAddress");
+			String toAddress = (String) props.get("emailsenderTo");
+			String ccAddress = (String) props.get("emailsenderCC");
+			if(fromAddress.isEmpty())
+          	  return flag;
 			// tls enabled
 			props.put("mail.smtp.starttls.enable", props.get("mail.smtp.starttls.enable"));
 			props.put("mail.smtp.port", props.get("mail.smtp.port"));
@@ -55,8 +56,18 @@ public class SendMail extends HttpServlet {
 			props.put("mail.smtp.ssl.socketFactory", props.get("mail.smtp.ssl.socketFactory"));
 			session = Session.getInstance(props, null);
 			Message message = new MimeMessage(session);
-			message.setFrom(new InternetAddress(fromAdd));
-			message.addRecipient(RecipientType.TO, new InternetAddress(toAdd));
+			
+			message.setFrom(new InternetAddress(fromAddress));
+			
+			InternetAddress[] iAdressArrayTo = InternetAddress.parse(toAddress.trim());
+			message.setRecipients(Message.RecipientType.TO, iAdressArrayTo);	
+			
+			if(!ccAddress.isEmpty()){
+			InternetAddress[] iAdressArrayCC = InternetAddress.parse(ccAddress.trim());
+			message.setRecipients(Message.RecipientType.CC, iAdressArrayCC);
+			}
+		  	   
+		
 			message.setSubject(subject);
 			message.setContent(text, "text/html; charset=utf-8");
 
@@ -74,13 +85,11 @@ public class SendMail extends HttpServlet {
 		return mailsuccess;
 	}
 
-	public Boolean SendMailwithattachement(String subject, String toMail, String text, File QueryCreatedDate,
+	public Boolean SendMailwithattachement(String subject,String text, File QueryCreatedDate,
 			File IndexStartedTime, File errorMarked, File correctionQuery) {
 
 		Boolean mailsuccess = false;
 		try {
-
-			String toAdd = toMail;
 
 			Boolean flag = true;
 			Session session;
@@ -88,8 +97,11 @@ public class SendMail extends HttpServlet {
 			props.load(SendMail.class.getClassLoader().getResourceAsStream("config.properties"));
 			props.put("mail.transport.protocol", props.get("mail.transport.protocol"));
 			props.put("mail.smtp.host", props.get("mail.smtp.host"));
-			String fromAdd = (String) props.get("mail.fromAddress");
-
+			String fromAddress = (String) props.get("mail.fromAddress");
+			String toAddress = (String) props.get("emailsenderfranceTo");
+			String ccAddress = (String) props.get("emailsenderfranceCC");
+              if(fromAddress.isEmpty())
+            	  return flag;
 			// tls enabled
 			props.put("mail.smtp.starttls.enable", props.get("mail.smtp.starttls.enable"));
 			props.put("mail.smtp.port", props.get("mail.smtp.port"));
@@ -104,8 +116,16 @@ public class SendMail extends HttpServlet {
 			props.put("mail.smtp.ssl.socketFactory", props.get("mail.smtp.ssl.socketFactory"));
 			session = Session.getInstance(props, null);
 			Message message = new MimeMessage(session);
-			message.setFrom(new InternetAddress(fromAdd));
-			message.addRecipient(RecipientType.TO, new InternetAddress(toAdd));
+            message.setFrom(new InternetAddress(fromAddress));
+			
+			InternetAddress[] iAdressArrayTo = InternetAddress.parse(toAddress.trim());
+			message.setRecipients(Message.RecipientType.TO, iAdressArrayTo);	
+			
+			if(!ccAddress.isEmpty()){
+			InternetAddress[] iAdressArrayCC = InternetAddress.parse(ccAddress.trim());
+			message.setRecipients(Message.RecipientType.CC, iAdressArrayCC);
+			}
+		  	   
 			message.setSubject(subject);
 
 			MimeBodyPart textBodyPart = new MimeBodyPart();

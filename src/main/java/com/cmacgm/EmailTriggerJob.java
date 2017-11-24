@@ -27,9 +27,7 @@ import jxl.write.WritableWorkbook;
 @PropertySource("classpath:config.properties")
 public class EmailTriggerJob {
 
-	private Properties configProp = new Properties();
-	private String emailsender = "";
-	private String emailsenderfrance = "";
+	private Properties configProp = new Properties();	
 	private String pathToStore = "C:\\testing\\";
 	private String startDate="2017-10-16";
 
@@ -39,8 +37,7 @@ public class EmailTriggerJob {
 		Connection connection = null;
 		InputStream in = this.getClass().getClassLoader().getResourceAsStream("config.properties");
 		try {
-			configProp.load(in);
-			emailsender = configProp.getProperty("senderemail");			
+			configProp.load(in);				
 			startDate= configProp.getProperty("startDate");;
 		} catch (IOException e) {
 			throw new RuntimeException("config.properties not loaded properly");
@@ -238,7 +235,7 @@ public class EmailTriggerJob {
 			buf.append("</body></html>");	
 			SendMail sendEmail=new SendMail();
 			Thread.sleep(10);
-			sendEmail.SendMail("Jupiter Record Count",emailsender,buf.toString());
+			sendEmail.SendMail("Jupiter Record Count",buf.toString());
 			
 			
 		}
@@ -261,8 +258,7 @@ public class EmailTriggerJob {
 		InputStream in = this.getClass().getClassLoader().getResourceAsStream("config.properties");
 		try {
 			configProp.load(in);		
-			pathToStore = configProp.getProperty("pathToStore");
-			emailsenderfrance= configProp.getProperty("emailsenderfrance");
+			pathToStore = configProp.getProperty("pathToStore");			
 		} catch (IOException e) {
 			throw new RuntimeException("config.properties not loaded properly");
 		}
@@ -399,7 +395,7 @@ public void SendEmailAttachment(String content) throws IOException, SQLException
 			file4=null;
 		
 		if(filesend1||filesend2||filesend3||filesend4)
-		sendEmail.SendMailwithattachement("Jupiter Record Day Count", emailsenderfrance, content, file1, file2,file3,file4);
+		sendEmail.SendMailwithattachement("Jupiter Record Day Count", content, file1, file2,file3,file4);
 	}
 }
 
