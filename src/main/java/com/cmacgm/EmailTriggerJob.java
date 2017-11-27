@@ -69,13 +69,13 @@ public class EmailTriggerJob {
 
 	        			dailyIndexRate = " select * from ((select COUNT(*) as total_index FROM dtl_index  where   DATE_FORMAT(IndStartTime, '%b')=DATE_FORMAT('"
 					+ monthDate
-					+ "', '%b') and IndStartTime IS NOT NULL and IndStartUser IS NOT NULL and status IS NOT NULL) as total_index, (select COUNT(*) as auto_index FROM dtl_index  where   DATE_FORMAT(IndStartTime, '%b')=DATE_FORMAT('"
+					+ "', '%b') and IndStartTime IS NOT NULL ) as total_index, (select COUNT(*) as manual_index FROM dtl_index  where   DATE_FORMAT(IndStartTime, '%b')=DATE_FORMAT('"
 					+ monthDate
-					+ "', '%b')  and IndStartTime IS NOT NULL and IndStartUser='Service' and IndStartUser IS NOT NULL and status IS NOT NULL) as auto_index,(select COUNT(*) as manual_index FROM dtl_index  where   DATE_FORMAT(IndStartTime, '%b')=DATE_FORMAT('"
+					+ "', '%b')  and IndStartTime IS NOT NULL and IndStartUser!='Service' and IndStartUser IS NOT NULL ) as manual_index,(select COUNT(*) as auto_index FROM dtl_index  where   DATE_FORMAT(IndStartTime, '%b')=DATE_FORMAT('"
 					+ monthDate
-					+ "', '%b')  and IndStartTime IS NOT NULL and IndStartUser!='Service' and IndStartUser IS NOT NULL and status IS NOT NULL) as manual_index,(select COUNT(*) as draft_sent FROM dtl_index  where   DATE_FORMAT(IndStartTime, '%b')=DATE_FORMAT('"
+					+ "', '%b')  and IndStartTime IS NOT NULL and IndStartUser='Service' and IndStartUser IS NOT NULL) as auto_index,(select COUNT(*) as draft_sent FROM dtl_index  where   DATE_FORMAT(IndStartTime, '%b')=DATE_FORMAT('"
 					+ monthDate
-					+ "', '%b')  and IndStartTime IS NOT NULL and IndStartUser!='Service' and IndStartUser IS NOT NULL and status IS NOT NULL and status IN ('DRAFT SENT','DRAFT SENT WITH QUERY') ) as draft_sent)";
+					+ "', '%b')  and IndStartTime IS NOT NULL and status IS NOT NULL and status IN ('DRAFT SENT','DRAFT SENT WITH QUERY') ) as draft_sent)";
 	        
 			res = st.executeQuery(dailyIndexRate);
 
@@ -120,13 +120,13 @@ public class EmailTriggerJob {
 				 WEEK_OF_YEAR= startw.get(Calendar.WEEK_OF_YEAR);
 				 dayWiseDate= util_connection.getFormattedDate(date);
 			     dailyIndexRate = "select (SELECT COUNT(*) FROM dtl_index where DATE(IndStartTime)='" + dayWiseDate
-					+ "' and IndStartTime IS NOT NULL and IndStartUser IS NOT NULL and status IS NOT NULL) as total_index,"
+					+ "' and IndStartTime IS NOT NULL) as total_index,"
 					+ "(SELECT COUNT(*) FROM dtl_index where DATE(IndStartTime)='" + dayWiseDate
-					+ "' and IndStartUser!='Service' and IndStartTime IS NOT NULL and IndStartUser IS NOT NULL and status IS NOT NULL) as manual_index ,"
+					+ "' and IndStartUser!='Service' and IndStartTime IS NOT NULL and IndStartUser IS NOT NULL) as manual_index ,"
 					+ "(SELECT COUNT(*)  FROM dtl_index where DATE(IndStartTime)='" + dayWiseDate
-					+ "' and IndStartUser='Service' and IndStartTime IS NOT NULL and IndStartUser IS NOT NULL and status IS NOT NULL) as auto_index,"
+					+ "' and IndStartUser='Service' and IndStartTime IS NOT NULL and IndStartUser IS NOT NULL) as auto_index,"
 					+ "(SELECT COUNT(*) FROM dtl_index where DATE(IndStartTime)='" + dayWiseDate
-					+ "' and status IN ('DRAFT SENT','DRAFT SENT WITH QUERY') and IndStartTime IS NOT NULL and IndStartUser IS NOT NULL and status IS NOT NULL) as draft_sent ";
+					+ "' and status IN ('DRAFT SENT','DRAFT SENT WITH QUERY') and IndStartTime IS NOT NULL and status IS NOT NULL) as draft_sent ";
 
 			 res = st.executeQuery(dailyIndexRate);
 			while (res.next()) {
@@ -171,13 +171,13 @@ public class EmailTriggerJob {
 				 dayWiseDate= util_connection.getFormattedDate(date);
 			
 			 dailyIndexRate = "select (SELECT COUNT(*) FROM dtl_index where DATE(IndStartTime)='" + dayWiseDate
-					+ "' and IndStartTime IS NOT NULL and IndStartUser IS NOT NULL and status IS NOT NULL) as total_index,"
+					+ "' and IndStartTime IS NOT NULL ) as total_index,"
 					+ "(SELECT COUNT(*) FROM dtl_index where DATE(IndStartTime)='" + dayWiseDate
-					+ "' and IndStartUser!='Service' and IndStartTime IS NOT NULL and IndStartUser IS NOT NULL and status IS NOT NULL) as manual_index ,"
+					+ "' and IndStartUser!='Service' and IndStartTime IS NOT NULL and IndStartUser IS NOT NULL) as manual_index ,"
 					+ "(SELECT COUNT(*)  FROM dtl_index where DATE(IndStartTime)='" + dayWiseDate
-					+ "' and IndStartUser='Service' and IndStartTime IS NOT NULL and IndStartUser IS NOT NULL and status IS NOT NULL) as auto_index,"
+					+ "' and IndStartUser='Service' and IndStartTime IS NOT NULL and IndStartUser IS NOT NULL) as auto_index,"
 					+ "(SELECT COUNT(*) FROM dtl_index where DATE(IndStartTime)='" + dayWiseDate
-					+ "' and status IN ('DRAFT SENT','DRAFT SENT WITH QUERY') and IndStartTime IS NOT NULL and IndStartUser IS NOT NULL and status IS NOT NULL) as draft_sent ";
+					+ "' and status IN ('DRAFT SENT','DRAFT SENT WITH QUERY') and IndStartTime IS NOT NULL and status IS NOT NULL) as draft_sent ";
 
 			 res = st.executeQuery(dailyIndexRate);
 			while (res.next()) {
