@@ -99,7 +99,13 @@ public class Util_Connection {
 		return output;
 	}
 	
+	
+	public static String getCurrentTimeStamp() {
+	    SimpleDateFormat sdfDate = new SimpleDateFormat("HH:mm:ss"); //
+	    Date now = new Date();
+	    String strCurrTime = sdfDate.format(now);
+	    return strCurrTime;
+	}
 
 	
-
 }

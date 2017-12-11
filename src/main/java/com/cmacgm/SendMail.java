@@ -29,8 +29,6 @@ public class SendMail extends HttpServlet {
 
 		Boolean mailsuccess = false;
 		try {
-
-			
 			Boolean flag = true;
 			Session session;
 			Properties props = new Properties();
@@ -182,4 +180,83 @@ public class SendMail extends HttpServlet {
 		return mailsuccess;
 	}
 
+	public Boolean SendScheduledMailwithAttachement(String subject,String text, File QueryCreatedDate) {
+
+		Boolean mailsuccess = false;
+		try {
+
+			Boolean flag = true;
+			Session session;
+			Properties props = new Properties();
+			props.load(SendMail.class.getClassLoader().getResourceAsStream("config.properties"));
+			props.put("mail.transport.protocol", props.get("mail.transport.protocol"));
+			props.put("mail.smtp.host", props.get("mail.smtp.host"));
+			String fromAddress = (String) props.get("mail.fromAddress");
+			String toAddress = (String) props.get("emailsenderScheduledReports_To");
+			String ccAddress = (String) props.get("emailsenderScheduledReports_CC");
+              if(fromAddress.isEmpty())
+            	  return flag;
+			// tls enabled
+			props.put("mail.smtp.starttls.enable", props.get("mail.smtp.starttls.enable"));
+			props.put("mail.smtp.port", props.get("mail.smtp.port"));
+
+			MailSSLSocketFactory sf = null;
+			try {
+				sf = new MailSSLSocketFactory();
+			} catch (GeneralSecurityException e1) {
+				e1.printStackTrace();
+			}
+			sf.setTrustAllHosts(true);
+			props.put("mail.smtp.ssl.socketFactory", props.get("mail.smtp.ssl.socketFactory"));
+			session = Session.getInstance(props, null);
+			Message message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(fromAddress));
+			
+			InternetAddress[] iAdressArrayTo = InternetAddress.parse(toAddress.trim());
+			message.setRecipients(Message.RecipientType.TO, iAdressArrayTo);	
+			
+			if(!ccAddress.isEmpty()){
+			InternetAddress[] iAdressArrayCC = InternetAddress.parse(ccAddress.trim());
+			message.setRecipients(Message.RecipientType.CC, iAdressArrayCC);
+			}
+		  	   
+			message.setSubject(subject);
+
+			MimeBodyPart textBodyPart = new MimeBodyPart();
+			textBodyPart.setContent(text, "text/html; charset=utf-8");
+			MimeBodyPart mbp1 = new MimeBodyPart();
+			MimeBodyPart mbp = new MimeBodyPart();
+			MimeBodyPart mbp2 = new MimeBodyPart();
+			MimeBodyPart mbp3 = new MimeBodyPart();
+			Multipart mp = new MimeMultipart();
+			FileDataSource fds = null;
+			if (QueryCreatedDate != null) {
+				fds = new FileDataSource(QueryCreatedDate);
+				mbp.setDataHandler(new DataHandler(fds));
+				mbp.setFileName(fds.getName());
+				mp.addBodyPart(mbp);
+			}
+		
+			message.setText(text);
+
+			mp.addBodyPart(textBodyPart);
+			message.setContent(mp);
+			message.setSentDate(new Date());
+
+			Transport.send(message);
+
+			mailsuccess = true;
+			flag = true;
+			if (flag == false) {
+				mailsuccess = false;
+
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			mailsuccess = false;
+		}
+		return mailsuccess;
+	}
+
+	
 }

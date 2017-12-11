@@ -30,6 +30,7 @@ public class EmailTriggerJob {
 	private Properties configProp = new Properties();
 	private String pathToStore = "C:\\testing\\";
 	private String startDate = "2017-10-16";
+	private static String _dapFileName="";
 
 	@Scheduled(cron = "${cronExpressionHtml}")
 	public void JupiterRecordAlert() throws SQLException {
@@ -333,6 +334,114 @@ public class EmailTriggerJob {
 
 	}
 
+	
+	@Scheduled(cron = "${cronExpressionScheduledReports}")
+	public void JupiterScheduledReportsWithAttachment() throws SQLException {
+		
+		Connection connection = null;
+		String dailyIndexRate = null;
+		InputStream in = this.getClass().getClassLoader().getResourceAsStream("config.properties");
+		try {
+			configProp.load(in);
+			pathToStore = configProp.getProperty("pathToStore");
+		} catch (IOException e) {
+			throw new RuntimeException("config.properties not loaded properly");
+		}
+		try
+		{
+			
+			Util_Connection util_connection = new Util_Connection();
+			connection = util_connection.GetConnection();
+			Statement st = (Statement) connection.createStatement();
+			String yesterdayDate = "";
+			String todayDate = "";
+			ResultSet res = null;
+			String CurrDate  = util_connection.getFormatDate();
+			
+			CurrDate = CurrDate.replace(":", "_");
+			
+			String currTime = util_connection.getCurrentTimeStamp();
+			
+			String[] HHmm = currTime.split(":");
+			String HH = HHmm[0]; // 004
+			String MM = HHmm[1]; 
+			
+			String _rpt1 = configProp.getProperty("scheduledReport1");
+			String _rpt2 = configProp.getProperty("scheduledReport2");
+			String _rpt3 = configProp.getProperty("scheduledReport3");
+			String _rpt4 = configProp.getProperty("scheduledReport4");
+			String _rpt5 = configProp.getProperty("scheduledReport5");
+			
+			String  _rtp1StTime = configProp.getProperty("ScheduledRpt1StartTime");
+			String  _rtp1EndTime = configProp.getProperty("ScheduledRpt1EndTime");
+			
+			String  _rtp2StTime = configProp.getProperty("ScheduledRpt2StartTime");
+			String  _rtp2EndTime = configProp.getProperty("ScheduledRpt2EndTime");
+			
+			String  _rtp3StTime = configProp.getProperty("ScheduledRpt3StartTime");
+			String  _rtp3EndTime = configProp.getProperty("ScheduledRpt3EndTime");
+	
+			String  _rtp4StTime = configProp.getProperty("ScheduledRpt4StartTime");
+			String  _rtp4EndTime = configProp.getProperty("ScheduledRpt4EndTime");
+			
+			String  _rtp5StTime = configProp.getProperty("ScheduledRpt5StartTime");
+			String  _rtp5EndTime = configProp.getProperty("ScheduledRpt5EndTime");
+			
+			 _dapFileName ="DAP_Report_"+ CurrDate;
+			
+			yesterdayDate = util_connection.formmatedDate();
+			todayDate = util_connection.todayFormattedDate();
+					
+			if (HH.equals(_rpt1))
+			{
+				yesterdayDate = yesterdayDate +" "+ _rtp1StTime;
+				todayDate = todayDate +" "+ _rtp1EndTime;
+			}
+			else if(HH.equals(_rpt2))
+			{
+				yesterdayDate = todayDate +" "+ _rtp2StTime;
+				todayDate = todayDate +" "+ _rtp2EndTime;
+			}
+			else if(HH.equals(_rpt3))
+			{
+				yesterdayDate = todayDate +" "+ _rtp3StTime;
+				todayDate = todayDate +" "+ _rtp3EndTime;
+			}
+			else if(HH.equals(_rpt4))
+			{
+				yesterdayDate = todayDate +" "+ _rtp4StTime;
+				todayDate = todayDate +" "+ _rtp4EndTime;
+			}
+			else if(HH.equals(_rpt5))
+			{
+				yesterdayDate = todayDate +" "+ _rtp5StTime;
+				todayDate = todayDate +" "+ _rtp5EndTime;
+			}
+			
+			dailyIndexRate = "Select * from dtl_index where status = 'DRAFT-APPROVAL' and id!='' and IndStartTime  between '" + yesterdayDate
+					+ "' AND '" + todayDate + "'";
+			res = st.executeQuery(dailyIndexRate);
+			Thread.sleep(10);
+		
+			writeQueryResult(res, _dapFileName);
+			
+			Thread.sleep(10);
+			//SendEmailAttachment("Current_Indexing_Status");
+			SendScheduledReportMailwithAttachement("DAP Report");
+		}
+
+		catch (SQLException s) {
+			System.out.println("SQL code does not execute." + s);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			connection.close();
+		}
+
+	}
+	
+	
+	
 	public void writeQueryResult(ResultSet rs, String fileName) throws IOException, SQLException {
 		File pathToFileStore = new File(pathToStore);
 		if (!pathToFileStore.exists())
@@ -379,7 +488,8 @@ public class EmailTriggerJob {
 
 	}
 
-	public void SendEmailAttachment(String content) throws IOException, SQLException {
+	public void SendEmailAttachment(String content) throws IOException, SQLException
+	{
 		SendMail sendEmail = new SendMail();
 		boolean filesend1 = false;
 		boolean filesend2 = false;
@@ -410,5 +520,22 @@ public class EmailTriggerJob {
 
 		if (filesend1 || filesend2 || filesend3 || filesend4)
 			sendEmail.SendMailwithattachement("Jupiter Record Day Count", content, file1, file2, file3, file4);
+	}
+	
+	public void SendScheduledReportMailwithAttachement(String content) throws IOException, SQLException
+	{
+		SendMail sendEmail = new SendMail();
+		boolean filesend1 = false;
+		
+		File file1 = new File(pathToStore + _dapFileName+ ".xls");  
+		if (file1.exists())
+			filesend1 = true;
+		else
+			file1 = null;
+		
+		if (filesend1) 
+		{
+			sendEmail.SendScheduledMailwithAttachement("DAR Report", content, file1);
+		}
 	}
 }
