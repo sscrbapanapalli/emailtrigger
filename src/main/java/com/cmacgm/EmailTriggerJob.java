@@ -418,7 +418,8 @@ public class EmailTriggerJob {
 				todayDate = todayDate +" "+ _rtp5EndTime;
 			}
 			
-			dailyIndexRate = "Select * from dtl_index where status = 'DRAFT-APPROVAL' and id!='' and IndStartTime  between '" + yesterdayDate
+			dailyIndexRate = "Select index_type,book_no,country_id,country_name,brand,customer_name,agency_code,vessel_name,voyage_code,service_code,saildate,pol,pod,zone,sub_zone,edi,si_received,sla_cutoff_time,IndStartUser,IndStartTime,IndEndTime,status,hold_status,created_date,cntnr_lnkd,booking_status,bl_status,release_action"+
+ " from dtl_index where status = 'DRAFT-APPROVAL' and id!='' and IndStartTime  between '" + yesterdayDate
 					+ "' AND '" + todayDate + "'";
 			res = st.executeQuery(dailyIndexRate);
 			Thread.sleep(10);
