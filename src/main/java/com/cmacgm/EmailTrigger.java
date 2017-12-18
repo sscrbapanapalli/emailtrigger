@@ -26,7 +26,7 @@ public class EmailTrigger extends SpringBootServletInitializer {
 	public static void main(String[] args) throws Exception {
 		SpringApplication.run(EmailTrigger.class, args);
 		// EmailTriggerJob _objJob = new EmailTriggerJob();
-		// _objJob.JupiterScheduledReportsWithAttachment();
+		//_objJob.JupiterScheduledReportsWithAttachment();
 	}
 
 }

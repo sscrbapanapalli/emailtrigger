@@ -38,6 +38,7 @@ public class SendMail extends HttpServlet {
 			String fromAddress = (String) props.get("mail.fromAddress");
 			String toAddress = (String) props.get("emailsenderTo");
 			String ccAddress = (String) props.get("emailsenderCC");
+			String bccAddress = (String) props.get("emailsenderScheduledReports_BCC");
 			if(fromAddress.isEmpty())
           	  return flag;
 			// tls enabled
@@ -64,7 +65,11 @@ public class SendMail extends HttpServlet {
 			InternetAddress[] iAdressArrayCC = InternetAddress.parse(ccAddress.trim());
 			message.setRecipients(Message.RecipientType.CC, iAdressArrayCC);
 			}
-		  	   
+			if(!bccAddress.isEmpty()){
+				InternetAddress[] iAdressArrayBBC = InternetAddress.parse(bccAddress.trim());
+				message.setRecipients(Message.RecipientType.BCC, iAdressArrayBBC);
+				}
+		  	     
 		
 			message.setSubject(subject);
 			message.setContent(text, "text/html; charset=utf-8");
@@ -98,6 +103,7 @@ public class SendMail extends HttpServlet {
 			String fromAddress = (String) props.get("mail.fromAddress");
 			String toAddress = (String) props.get("emailsenderfranceTo");
 			String ccAddress = (String) props.get("emailsenderfranceCC");
+			String bccAddress = (String) props.get("emailsenderScheduledReports_BCC");
               if(fromAddress.isEmpty())
             	  return flag;
 			// tls enabled
@@ -123,7 +129,11 @@ public class SendMail extends HttpServlet {
 			InternetAddress[] iAdressArrayCC = InternetAddress.parse(ccAddress.trim());
 			message.setRecipients(Message.RecipientType.CC, iAdressArrayCC);
 			}
-		  	   
+			if(!bccAddress.isEmpty()){
+				InternetAddress[] iAdressArrayBBC = InternetAddress.parse(bccAddress.trim());
+				message.setRecipients(Message.RecipientType.BCC, iAdressArrayBBC);
+				}
+		  	      
 			message.setSubject(subject);
 
 			MimeBodyPart textBodyPart = new MimeBodyPart();
@@ -194,6 +204,7 @@ public class SendMail extends HttpServlet {
 			String fromAddress = (String) props.get("mail.fromAddress");
 			String toAddress = (String) props.get("emailsenderScheduledReports_To");
 			String ccAddress = (String) props.get("emailsenderScheduledReports_CC");
+			String bccAddress = (String) props.get("emailsenderScheduledReports_BCC");
               if(fromAddress.isEmpty())
             	  return flag;
 			// tls enabled
@@ -219,15 +230,17 @@ public class SendMail extends HttpServlet {
 			InternetAddress[] iAdressArrayCC = InternetAddress.parse(ccAddress.trim());
 			message.setRecipients(Message.RecipientType.CC, iAdressArrayCC);
 			}
+			if(!bccAddress.isEmpty()){
+				InternetAddress[] iAdressArrayBBC = InternetAddress.parse(bccAddress.trim());
+				message.setRecipients(Message.RecipientType.BCC, iAdressArrayBBC);
+				}
 		  	   
 			message.setSubject(subject);
 
 			MimeBodyPart textBodyPart = new MimeBodyPart();
 			textBodyPart.setContent(text, "text/html; charset=utf-8");
-			MimeBodyPart mbp1 = new MimeBodyPart();
-			MimeBodyPart mbp = new MimeBodyPart();
-			MimeBodyPart mbp2 = new MimeBodyPart();
-			MimeBodyPart mbp3 = new MimeBodyPart();
+		
+			MimeBodyPart mbp = new MimeBodyPart();			
 			Multipart mp = new MimeMultipart();
 			FileDataSource fds = null;
 			if (QueryCreatedDate != null) {

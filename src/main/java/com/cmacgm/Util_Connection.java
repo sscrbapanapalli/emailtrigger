@@ -77,6 +77,34 @@ public class Util_Connection {
 		return null;
 	
 	}
+	public String formmatedDateHHMMSS(){
+		try {		  
+
+		    SimpleDateFormat dmyFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+		    String dmy = dmyFormat.format(yesterday());
+
+		   return dmy;
+		} catch (Exception exp) {
+		    exp.printStackTrace();
+		}
+		return null;
+	
+	}
+	public String todayFormattedDateHHMMSS(){
+		try {		  
+
+		    SimpleDateFormat dmyFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+
+		    String dmy = dmyFormat.format(new Date());
+
+		   return dmy;
+		} catch (Exception exp) {
+		    exp.printStackTrace();
+		}
+		return null;
+	
+	}
 	public String getFormattedDate(Date date){
 		try {		  
 
@@ -92,6 +120,17 @@ public class Util_Connection {
 	
 	}
 	
+	public  String getLastMondayDateddMMyyyy() {		
+		// Converting Calendar to Date.
+		Calendar calendar = Calendar.getInstance();
+		calendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
+		calendar.add(Calendar.DAY_OF_WEEK, -7);
+		Date currentDate = calendar.getTime();
+		DateFormat format = new SimpleDateFormat("dd-MM-yyyy");
+		// Converting Date to String.
+		String myCurrentDate = format.format(currentDate);
+		return myCurrentDate;
+	}
 	public String getFormatDate() {
 		DateFormat outputformat = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss aa");
 		String output = null;

@@ -42,6 +42,7 @@ public class EmailTriggerJob {
 			startDate = configProp.getProperty("startDate");
 			;
 		} catch (IOException e) {
+			System.out.println("IOException" + e);
 			throw new RuntimeException("config.properties not loaded properly");
 		}
 		try {
@@ -141,6 +142,7 @@ public class EmailTriggerJob {
 						+ dayWiseDate
 						+ "' and status IN ('DRAFT SENT','DRAFT SENT WITH QUERY') and IndStartTime IS NOT NULL and status IS NOT NULL) as draft_sent )";
 				res = st.executeQuery(dailyIndexRate);
+			
 				while (res.next()) {
 
 					if (tempRate > 0 && tempRate <= 7) {
@@ -195,7 +197,7 @@ public class EmailTriggerJob {
 						+ "(SELECT COUNT(IndStartTime) as draft_sent FROM dtl_index where DATE(IndStartTime)='"
 						+ dayWiseDate
 						+ "' and status IN ('DRAFT SENT','DRAFT SENT WITH QUERY') and IndStartTime IS NOT NULL and status IS NOT NULL) as draft_sent) ";
-
+			
 				res = st.executeQuery(dailyIndexRate);
 				while (res.next()) {
 					String total_index = res.getString("total_index");
@@ -265,7 +267,8 @@ public class EmailTriggerJob {
 		catch (SQLException s) {
 			System.out.println("SQL code does not execute." + s);
 		} catch (Exception e) {
-			e.printStackTrace();
+			System.out.println("Exception" + e);
+					
 		} finally {
 			connection.close();
 		}
@@ -282,6 +285,7 @@ public class EmailTriggerJob {
 			configProp.load(in);
 			pathToStore = configProp.getProperty("pathToStore");
 		} catch (IOException e) {
+			System.out.println("IOException" + e);
 			throw new RuntimeException("config.properties not loaded properly");
 		}
 		try {
@@ -298,26 +302,31 @@ public class EmailTriggerJob {
 			dailyIndexRate = "Select * from dtl_query where id!='' and query_created_date between '" + yesterdayDate
 					+ "'  AND '" + todayDate + "'";
 			res = st.executeQuery(dailyIndexRate);
+		
 			Thread.sleep(10);
 			writeQueryResult(res, "QueryCreated");
 
 			dailyIndexRate = "Select * from dtl_index where id!='' and IndStartTime  between '" + yesterdayDate
 					+ "' AND '" + todayDate + "'";
 			res = st.executeQuery(dailyIndexRate);
+			
 			Thread.sleep(10);
 			writeQueryResult(res, "IndexStarted");
 
 			dailyIndexRate = "Select * from dtl_audit_errors where id!='' and error_marked_on between '" + yesterdayDate
 					+ "'  AND '" + todayDate + "'";
 			res = st.executeQuery(dailyIndexRate);
+			
 			Thread.sleep(10);
 			writeQueryResult(res, "ErrorMarked");
 
 			dailyIndexRate = "Select * from dtl_correction_query where id!='' and created_date between '"
 					+ yesterdayDate + "'  AND '" + todayDate + "'";
 			res = st.executeQuery(dailyIndexRate);
+		
 			Thread.sleep(10);
 			writeQueryResult(res, "QueryCorrection");
+			
 
 			Thread.sleep(10);
 			SendEmailAttachment("Yesterday Jupiter Daily Records Count Attached for Reference");
@@ -327,7 +336,57 @@ public class EmailTriggerJob {
 		catch (SQLException s) {
 			System.out.println("SQL code does not execute." + s);
 		} catch (Exception e) {
-			e.printStackTrace();
+			System.out.println("Exception" + e);
+		} finally {
+			connection.close();
+		}
+
+	}
+	@Scheduled(cron = "${cronExpressionAuditReport}")
+	public void JupiterRecordAttachmentMonday() throws SQLException {
+
+		Connection connection = null;
+		String dailyIndexRate = null;
+		InputStream in = this.getClass().getClassLoader().getResourceAsStream("config.properties");
+		try {
+			configProp.load(in);
+			pathToStore = configProp.getProperty("pathToStore");
+		} catch (IOException e) {
+			System.out.println("IOException" + e);
+			throw new RuntimeException("config.properties not loaded properly");
+		}
+		try {
+			Util_Connection util_connection = new Util_Connection();
+			connection = util_connection.GetConnection();
+			Statement st = (Statement) connection.createStatement();
+			String yesterdayDate = "";
+			String todayDate = "";
+            String CurrDate  = util_connection.getFormatDate();
+			
+			CurrDate = CurrDate.replace(":", "_");
+			ResultSet res = null;
+			todayDate = util_connection.todayFormattedDate();			
+			 
+			yesterdayDate=util_connection.getLastMondayDateddMMyyyy();
+			yesterdayDate = yesterdayDate + " 06:31:00";
+			todayDate = todayDate + " 06:30:00";
+			dailyIndexRate = "select e.book_no as Booking_No, e.category as Error_Category,e.sub_category as Error_Sub_Category,e.error_person as Error_Addressed_By, e.error_marked_on as Error_Reported_Date, a.book_no,a.audit_start_user as Audited_By ,a.audit_end_user as Audit_Completed_By from dtl_audit_errors e, dtl_audit a where a.book_no=e.book_no and e.error_marked_on between '" + yesterdayDate
+					+ "'  AND '" + todayDate + "' order by e.error_marked_on desc";
+			res = st.executeQuery(dailyIndexRate);
+			
+			String content="Audit Report From Date:"+yesterdayDate+" To Date:"+todayDate;
+			 _dapFileName ="Audit_Report_"+ CurrDate;
+			Thread.sleep(10);
+			writeQueryResult(res, _dapFileName);			
+			Thread.sleep(10);
+			SendScheduledReportMailwithAttachement("Audit Report",content);
+
+		}
+
+		catch (SQLException s) {
+			System.out.println("SQL code does not execute." + s);
+		} catch (Exception e) {
+			System.out.println("Exception" + e);
 		} finally {
 			connection.close();
 		}
@@ -345,6 +404,7 @@ public class EmailTriggerJob {
 			configProp.load(in);
 			pathToStore = configProp.getProperty("pathToStore");
 		} catch (IOException e) {
+			System.out.println("IOException" + e);
 			throw new RuntimeException("config.properties not loaded properly");
 		}
 		try
@@ -371,6 +431,10 @@ public class EmailTriggerJob {
 			String _rpt3 = configProp.getProperty("scheduledReport3");
 			String _rpt4 = configProp.getProperty("scheduledReport4");
 			String _rpt5 = configProp.getProperty("scheduledReport5");
+			String _rpt6 = configProp.getProperty("scheduledReport6");
+			String _rpt7 = configProp.getProperty("scheduledReport7");
+			String _rptm6 = configProp.getProperty("scheduledReportm6");
+			String _rptm7 = configProp.getProperty("scheduledReportm7");
 			
 			String  _rtp1StTime = configProp.getProperty("ScheduledRpt1StartTime");
 			String  _rtp1EndTime = configProp.getProperty("ScheduledRpt1EndTime");
@@ -387,54 +451,109 @@ public class EmailTriggerJob {
 			String  _rtp5StTime = configProp.getProperty("ScheduledRpt5StartTime");
 			String  _rtp5EndTime = configProp.getProperty("ScheduledRpt5EndTime");
 			
-			 _dapFileName ="DAP_Report_"+ CurrDate;
+			String  _rtp6StTime = configProp.getProperty("ScheduledRpt6StartTime");
+			String  _rtp6EndTime = configProp.getProperty("ScheduledRpt6EndTime");
 			
+			String  _rtp7StTime = configProp.getProperty("ScheduledRpt7StartTime");
+			String  _rtp7EndTime = configProp.getProperty("ScheduledRpt7EndTime");
+			
+			 _dapFileName ="DAP_Report_"+ CurrDate;
+			 String subject="";
+			 String content="";
+			 boolean status=false;
 			yesterdayDate = util_connection.formmatedDate();
 			todayDate = util_connection.todayFormattedDate();
-					
+			subject="DAP REPORT";	
 			if (HH.equals(_rpt1))
 			{
+				status=true;
 				yesterdayDate = yesterdayDate +" "+ _rtp1StTime;
-				todayDate = todayDate +" "+ _rtp1EndTime;
+				todayDate = todayDate +" "+ _rtp1EndTime;		
+				content="DAP_REPORT From Date:"+yesterdayDate+" To Date:"+todayDate;
 			}
 			else if(HH.equals(_rpt2))
 			{
+				status=true;
 				yesterdayDate = todayDate +" "+ _rtp2StTime;
 				todayDate = todayDate +" "+ _rtp2EndTime;
+				content="DAP_REPORT From Date:"+yesterdayDate+" To Date:"+todayDate;
 			}
 			else if(HH.equals(_rpt3))
 			{
+				status=true;
 				yesterdayDate = todayDate +" "+ _rtp3StTime;
-				todayDate = todayDate +" "+ _rtp3EndTime;
+				todayDate = todayDate +" "+ _rtp3EndTime;	
+				content="DAP_REPORT From Date:"+yesterdayDate+" To Date:"+todayDate;
 			}
 			else if(HH.equals(_rpt4))
 			{
+				status=true;
 				yesterdayDate = todayDate +" "+ _rtp4StTime;
-				todayDate = todayDate +" "+ _rtp4EndTime;
+				todayDate = todayDate +" "+ _rtp4EndTime;			
+				content="DAP_REPORT From Date:"+yesterdayDate+" To Date:"+todayDate;
 			}
 			else if(HH.equals(_rpt5))
 			{
+				status=true;
 				yesterdayDate = todayDate +" "+ _rtp5StTime;
-				todayDate = todayDate +" "+ _rtp5EndTime;
+				todayDate = todayDate +" "+ _rtp5EndTime;	
+				content="DAP_REPORT From Date:"+yesterdayDate+" To Date:"+todayDate;
 			}
-			
-			dailyIndexRate = "Select index_type,book_no,country_id,country_name,brand,customer_name,agency_code,vessel_name,voyage_code,service_code,saildate,pol,pod,zone,sub_zone,edi,si_received,sla_cutoff_time,IndStartUser,IndStartTime,IndEndTime,status,hold_status,created_date,cntnr_lnkd,booking_status,bl_status,release_action"+
- " from dtl_index where status = 'DRAFT-APPROVAL' and id!='' and IndStartTime  between '" + yesterdayDate
-					+ "' AND '" + todayDate + "'";
-			res = st.executeQuery(dailyIndexRate);
-			Thread.sleep(10);
-		
-			writeQueryResult(res, _dapFileName);
-			
-			Thread.sleep(10);
-			//SendEmailAttachment("Current_Indexing_Status");
-			SendScheduledReportMailwithAttachement("DAP Report");
+			else if(HH.equals(_rpt6)&&MM.equals(_rptm6))
+			{
+				subject="Log_History";	
+				 _dapFileName ="Log_History"+ CurrDate;
+				yesterdayDate = yesterdayDate +" "+ _rtp6StTime;
+				todayDate = todayDate +" "+ _rtp6EndTime;	
+				content="Log_History From Date:"+yesterdayDate+" To Date:"+todayDate;
+				dailyIndexRate = "select index_type,book_no,ssc_log,log_type, created_user,created_date from tbl_input_log_history where created_date between '" + yesterdayDate
+					+ "'  AND '" + todayDate + "' order by created_date desc";
+									res = st.executeQuery(dailyIndexRate);
+									Thread.sleep(10);
+								
+									writeQueryResult(res, _dapFileName);
+									
+									Thread.sleep(10);
+									//SendEmailAttachment("Current_Indexing_Status");
+									SendScheduledReportMailwithAttachement(subject,content);
+			}
+			else if(HH.equals(_rpt7)&&MM.equals(_rptm7))
+			{
+				subject="Log_History";	
+				 _dapFileName ="Log_History"+ CurrDate;
+				yesterdayDate = todayDate +" "+ _rtp7StTime;
+				todayDate = todayDate +" "+ _rtp7EndTime;	
+				content="Log_History From Date:"+yesterdayDate+" To Date:"+todayDate;
+				dailyIndexRate = "select index_type,book_no,ssc_log,log_type, created_user,created_date from tbl_input_log_history where created_date  between '" + yesterdayDate
+					+ "'  AND '" + todayDate + "' order by created_date desc";
+									res = st.executeQuery(dailyIndexRate);
+									Thread.sleep(10);
+								
+									writeQueryResult(res, _dapFileName);
+									
+									Thread.sleep(10);
+									//SendEmailAttachment("Current_Indexing_Status");
+									SendScheduledReportMailwithAttachement(subject,content);
+			}
+			if(status){
+					dailyIndexRate = "Select index_type,book_no,country_id,country_name,brand,customer_name,agency_code,vessel_name,voyage_code,service_code,saildate,pol,pod,zone,sub_zone,edi,si_received,sla_cutoff_time,IndStartUser,IndStartTime,IndEndTime,status,hold_status,created_date,cntnr_lnkd,booking_status,bl_status,release_action"+
+		 " from dtl_index where status = 'DRAFT-APPROVAL' and id!='' and IndStartTime  between '" + yesterdayDate
+							+ "' AND '" + todayDate + "'";
+					res = st.executeQuery(dailyIndexRate);
+					Thread.sleep(10);
+				
+					writeQueryResult(res, _dapFileName);
+					
+					Thread.sleep(10);
+					//SendEmailAttachment("Current_Indexing_Status");
+					SendScheduledReportMailwithAttachement(subject,content);
+				}
 		}
 
 		catch (SQLException s) {
 			System.out.println("SQL code does not execute." + s);
 		} catch (Exception e) {
-			e.printStackTrace();
+			System.out.println("Exception" + e);
 		} finally {
 			connection.close();
 		}
@@ -523,7 +642,7 @@ public class EmailTriggerJob {
 			sendEmail.SendMailwithattachement("Jupiter Record Day Count", content, file1, file2, file3, file4);
 	}
 	
-	public void SendScheduledReportMailwithAttachement(String content) throws IOException, SQLException
+	public void SendScheduledReportMailwithAttachement(String subject,String content) throws IOException, SQLException
 	{
 		SendMail sendEmail = new SendMail();
 		boolean filesend1 = false;
@@ -536,7 +655,7 @@ public class EmailTriggerJob {
 		
 		if (filesend1) 
 		{
-			sendEmail.SendScheduledMailwithAttachement("DAR Report", content, file1);
+			sendEmail.SendScheduledMailwithAttachement(subject, content, file1);
 		}
 	}
 }
