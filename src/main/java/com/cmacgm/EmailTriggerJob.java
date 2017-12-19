@@ -379,7 +379,7 @@ public class EmailTriggerJob {
 			Thread.sleep(10);
 			writeQueryResult(res, _dapFileName);			
 			Thread.sleep(10);
-			SendScheduledReportMailwithAttachement("Audit Report",content);
+			SendScheduledReportMailwithAttachement("Audit_Report",content);
 
 		}
 
@@ -464,35 +464,35 @@ public class EmailTriggerJob {
 			yesterdayDate = util_connection.formmatedDate();
 			todayDate = util_connection.todayFormattedDate();
 			subject="DAP REPORT";	
-			if (HH.equals(_rpt1)&&MM.equals("00"))
+			if (HH.equals(_rpt1) && MM.equals("00"))
 			{
 				status=true;
 				yesterdayDate = yesterdayDate +" "+ _rtp1StTime;
 				todayDate = todayDate +" "+ _rtp1EndTime;		
 				content="DAP_REPORT From Date:"+yesterdayDate+" To Date:"+todayDate;
 			}
-			else if(HH.equals(_rpt2)&&MM.equals("00"))
+			else if(HH.equals(_rpt2)&& MM.equals("00"))
 			{
 				status=true;
 				yesterdayDate = todayDate +" "+ _rtp2StTime;
 				todayDate = todayDate +" "+ _rtp2EndTime;
 				content="DAP_REPORT From Date:"+yesterdayDate+" To Date:"+todayDate;
 			}
-			else if(HH.equals(_rpt3)&&MM.equals("00"))
+			else if(HH.equals(_rpt3)&& MM.equals("00"))
 			{
 				status=true;
 				yesterdayDate = todayDate +" "+ _rtp3StTime;
 				todayDate = todayDate +" "+ _rtp3EndTime;	
 				content="DAP_REPORT From Date:"+yesterdayDate+" To Date:"+todayDate;
 			}
-			else if(HH.equals(_rpt4)&&MM.equals("00"))
+			else if(HH.equals(_rpt4)&& MM.equals("00"))
 			{
 				status=true;
 				yesterdayDate = todayDate +" "+ _rtp4StTime;
 				todayDate = todayDate +" "+ _rtp4EndTime;			
 				content="DAP_REPORT From Date:"+yesterdayDate+" To Date:"+todayDate;
 			}
-			else if(HH.equals(_rpt5)&&MM.equals("00"))
+			else if(HH.equals(_rpt5)&& MM.equals("00"))
 			{
 				status=true;
 				yesterdayDate = todayDate +" "+ _rtp5StTime;
