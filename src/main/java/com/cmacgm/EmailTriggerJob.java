@@ -142,6 +142,7 @@ public class EmailTriggerJob {
 						+ dayWiseDate
 						+ "' and status IN ('DRAFT SENT','DRAFT SENT WITH QUERY') and IndStartTime IS NOT NULL and status IS NOT NULL) as draft_sent )";
 				res = st.executeQuery(dailyIndexRate);
+				
 			
 				while (res.next()) {
 
@@ -151,17 +152,7 @@ public class EmailTriggerJob {
 						wauto_index += Integer.parseInt(res.getString("auto_index"));
 						wdraft_sent += Integer.parseInt(res.getString("draft_sent"));
 					}
-					if (tempRate > 0 && tempRate == 7) {
-
-						tempRate = 0;
-						buf.append("<tr><td>").append(WEEK_OF_YEAR).append("</td><td>").append(wtotal_index)
-								.append("</td><td>").append(wmanual_index).append("</td><td>").append(wauto_index)
-								.append("</td><td>").append(wdraft_sent).append("</td></tr>");
-						wtotal_index = 0;
-						wmanual_index = 0;
-						wauto_index = 0;
-						wdraft_sent = 0;
-					}
+					
 
 					/*
 					 * System.out.println(dayWiseDate); System.out.println(
@@ -172,6 +163,85 @@ public class EmailTriggerJob {
 					 */
 
 				}
+				if (tempRate > 0 && tempRate == 7) {
+
+					tempRate = 0;
+					buf.append("<tr><td>").append(WEEK_OF_YEAR).append("</td><td>").append(wtotal_index)
+							.append("</td><td>").append(wmanual_index).append("</td><td>").append(wauto_index)
+							.append("</td><td>").append(wdraft_sent).append("</td></tr>");
+					wtotal_index = 0;
+					wmanual_index = 0;
+					wauto_index = 0;
+					wdraft_sent = 0;
+				}
+			}
+			buf.append("</table></br>");
+			
+			buf.append("</br><b>Weekly Wise Index Type Summary Report: </b></br> <table border='1'>" + "<tr>"
+					+ "<th>Week</th><th>NSI</th>" + "<th>RSI</th>" + "<th>COR</th>"
+					+ "<th>CORF</th><th>DAP</th><th>QRS</th><th>CRS</th><th>COM</th><th>CERT</th><th>TOTAL INDEX</th></tr>");
+			
+			int NSI_COUNT=0,	RSI_COUNT=0,	COR_COUNT=0,	CORF_COUNT=0,	DAP_COUNT=0,	QRS_COUNT=0,	CRS_COUNT=0,	COM_COUNT=0	,CERT_COUNT=0;
+			tempRate = 0;	
+			wtotal_index=0;
+			Calendar startindex = Calendar.getInstance();
+			startindex.setTime(startDateWise);
+			Calendar endindex = Calendar.getInstance();
+			endindex.setTime(endDateWise);
+			for (Date date = startindex.getTime(); startindex.before(endindex); startindex.add(Calendar.DATE,
+					1), date = startindex.getTime()) {
+				tempRate++;
+				int WEEK_OF_YEAR = 1;
+				WEEK_OF_YEAR = startindex.get(Calendar.WEEK_OF_YEAR);
+				if (WEEK_OF_YEAR == 1)
+					WEEK_OF_YEAR = 1;
+				else
+					WEEK_OF_YEAR = WEEK_OF_YEAR - 1;
+				dayWiseDate = util_connection.getFormattedDate(date);	
+			
+				dailyIndexRate = "select COUNT(IndStartTime) as total_index,count(index_type) as count,index_type as index_type from dtl_index where DATE(si_received)='"+dayWiseDate+"' group by index_type";
+				res = st.executeQuery(dailyIndexRate);
+			  	    	
+				while (res.next()) {
+				
+					if (tempRate > 0 && tempRate <= 7) {
+						wtotal_index += Integer.parseInt(res.getString("total_index"));
+						if(res.getString("index_type").equals("NSI"))
+						NSI_COUNT += Integer.parseInt(res.getString("count"));
+						else if(res.getString("index_type").equals("RSI"))
+							RSI_COUNT += Integer.parseInt(res.getString("count"));
+						else if(res.getString("index_type").equals("COR"))
+							COR_COUNT += Integer.parseInt(res.getString("count"));
+						else if(res.getString("index_type").equals("CORF"))
+							CORF_COUNT += Integer.parseInt(res.getString("count"));
+						else if(res.getString("index_type").equals("DAP"))
+							DAP_COUNT += Integer.parseInt(res.getString("count"));
+						else if(res.getString("index_type").equals("QRS"))
+							QRS_COUNT += Integer.parseInt(res.getString("count"));
+						else if(res.getString("index_type").equals("CRS"))
+							CRS_COUNT += Integer.parseInt(res.getString("count"));
+						else if(res.getString("index_type").equals("COM"))
+							COM_COUNT += Integer.parseInt(res.getString("count"));
+						else if(res.getString("index_type").equals("CERT"))
+							CERT_COUNT += Integer.parseInt(res.getString("count"));
+					
+											
+					}
+					
+
+					
+
+				}
+				if (tempRate > 0 && tempRate == 7) {
+					
+					tempRate = 0;
+											buf.append("<tr><td>").append(WEEK_OF_YEAR).append("</td><td>").append(NSI_COUNT)
+													.append("</td><td>").append(RSI_COUNT).append("</td><td>").append(COR_COUNT)
+													.append("</td><td>").append(CORF_COUNT).append("</td><td>").append(DAP_COUNT)
+													.append("</td><td>").append(QRS_COUNT).append("</td><td>").append(CRS_COUNT)
+													.append("</td><td>").append(COM_COUNT).append("</td><td>").append(CERT_COUNT).append("</td><td>").append(wtotal_index).append("</td></tr>");
+											 NSI_COUNT=0;	RSI_COUNT=0;	COR_COUNT=0;	CORF_COUNT=0;	DAP_COUNT=0;	QRS_COUNT=0;	CRS_COUNT=0;	COM_COUNT=0;CERT_COUNT=0;wtotal_index=0;
+										}
 			}
 			buf.append("</table></br>");
 
@@ -260,7 +330,7 @@ public class EmailTriggerJob {
 			buf.append("</body></html>");
 			SendMail sendEmail = new SendMail();
 			Thread.sleep(10);
-			sendEmail.SendMail("Jupiter Record Count", buf.toString());
+		sendEmail.SendMail("Jupiter Record Count", buf.toString());
 
 		}
 
