@@ -112,7 +112,7 @@ public class EmailTriggerJob {
 			int wmanual_index = 0;
 			int wauto_index = 0;
 			int wdraft_sent = 0;
-			int tempRate = 0;
+			int tempRate = 1;
 			formatter = new SimpleDateFormat("yyyy-MM-dd");
 			Date startDateWise = formatter.parse(startDate);
 			Date endDateWise = formatter.parse(util_connection.getFormattedDate(new Date()));
@@ -120,12 +120,13 @@ public class EmailTriggerJob {
 			startw.setTime(startDateWise);
 			Calendar endw = Calendar.getInstance();
 			endw.setTime(endDateWise);
-		
-			int WEEK_OF_YEAR = 1;
+			endw.add(Calendar.DATE, -1);
+			int WEEK_OF_YEAR = 0;
 			for (Date date = startw.getTime(); startw.before(endw); startw.add(Calendar.DATE,
 					1), date = startw.getTime()) {
 				tempRate++;
 				WEEK_OF_YEAR = startw.get(Calendar.WEEK_OF_YEAR);
+		
 			
 
 				dayWiseDate = util_connection.getFormattedDate(date);
@@ -160,12 +161,24 @@ public class EmailTriggerJob {
 					 */
 
 				}
-
-				if ((startw.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)
-						|| (endw.get(Calendar.DAY_OF_WEEK) == Calendar.DAY_OF_WEEK)) {
+				int day_of_week = endw.get(Calendar.DAY_OF_WEEK)-1;
+				int tempweek= endw.get(Calendar.WEEK_OF_YEAR);
+				if (tempRate > 0 && tempRate == 7) {
+				
 					tempRate = 0;
-
+					
 					buf.append("<tr><td>").append(WEEK_OF_YEAR).append("</td><td>").append(wtotal_index)
+							.append("</td><td>").append(wmanual_index).append("</td><td>").append(wauto_index)
+							.append("</td><td>").append(wdraft_sent).append("</td></tr>");
+					wtotal_index = 0;
+					wmanual_index = 0;
+					wauto_index = 0;
+					wdraft_sent = 0;
+
+				}		else if(WEEK_OF_YEAR==tempweek && tempRate==day_of_week){
+				
+					tempRate = 0;
+						buf.append("<tr><td>").append(WEEK_OF_YEAR).append("</td><td>").append(wtotal_index)
 							.append("</td><td>").append(wmanual_index).append("</td><td>").append(wauto_index)
 							.append("</td><td>").append(wdraft_sent).append("</td></tr>");
 					wtotal_index = 0;
@@ -183,7 +196,7 @@ public class EmailTriggerJob {
 
 			int NSI_COUNT = 0, RSI_COUNT = 0, COR_COUNT = 0, CORF_COUNT = 0, DAP_COUNT = 0, QRS_COUNT = 0,
 					CRS_COUNT = 0, COM_COUNT = 0, CERT_COUNT = 0;
-			tempRate = 0;
+			tempRate = 1;
 			wtotal_index = 0;
 			Calendar startindex = Calendar.getInstance();
 			startindex.setTime(startDateWise);
@@ -226,9 +239,10 @@ public class EmailTriggerJob {
 					}
 
 				}
-
-				if ((startindex.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)
-						|| (endindex.get(Calendar.DAY_OF_WEEK) == Calendar.DAY_OF_WEEK)) {
+				int day_of_week = endindex.get(Calendar.DAY_OF_WEEK)-1;
+				int tempweek= endw.get(Calendar.WEEK_OF_YEAR);
+				if (tempRate > 0 && tempRate == 7) {
+						 
 
 					tempRate = 0;
 					buf.append("<tr><td>").append(WEEK_OF_YEAR).append("</td><td>").append(NSI_COUNT)
@@ -248,6 +262,25 @@ public class EmailTriggerJob {
 					CERT_COUNT = 0;
 					wtotal_index = 0;
 
+				}else if(WEEK_OF_YEAR==tempweek && tempRate==day_of_week){
+
+					tempRate = 0;
+					buf.append("<tr><td>").append(WEEK_OF_YEAR).append("</td><td>").append(NSI_COUNT)
+							.append("</td><td>").append(RSI_COUNT).append("</td><td>").append(COR_COUNT)
+							.append("</td><td>").append(CORF_COUNT).append("</td><td>").append(DAP_COUNT)
+							.append("</td><td>").append(QRS_COUNT).append("</td><td>").append(CRS_COUNT)
+							.append("</td><td>").append(COM_COUNT).append("</td><td>").append(CERT_COUNT)
+							.append("</td><td>").append(wtotal_index).append("</td></tr>");
+					NSI_COUNT = 0;
+					RSI_COUNT = 0;
+					COR_COUNT = 0;
+					CORF_COUNT = 0;
+					DAP_COUNT = 0;
+					QRS_COUNT = 0;
+					CRS_COUNT = 0;
+					COM_COUNT = 0;
+					CERT_COUNT = 0;
+					wtotal_index = 0;
 				}
 			}
 			buf.append("</table></br>");
@@ -401,6 +434,7 @@ public class EmailTriggerJob {
 			buf.append("</body></html>");
 			SendMail sendEmail = new SendMail();
 			Thread.sleep(10);
+			
 			sendEmail.SendMail("Jupiter Record Count", buf.toString());
 
 		}
