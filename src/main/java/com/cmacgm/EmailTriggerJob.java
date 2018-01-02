@@ -65,15 +65,13 @@ public class EmailTriggerJob {
 			calm.set(2017, 8, 16); // October 16th 2017
 
 			Calendar currentDate = Calendar.getInstance();
-			currentDate.add(Calendar.MONTH, -1);
+			currentDate.add(Calendar.MONTH, 0);
 			while (!calm.getTime().after(currentDate.getTime())) {
 				calm.add(Calendar.MONTH, 1);
 				Date getmonth = calm.getTime();
 				String monthDate = util_connection.getFormattedDate(getmonth);
 
-				dailyIndexRate = " select total_index,manual_index,auto_index,draft_sent from ((select COUNT(IndStartTime) as total_index FROM dtl_index  where   DATE_FORMAT(IndStartTime, '%b')=DATE_FORMAT('"
-						+ monthDate
-						+ "', '%b') and IndStartTime IS NOT NULL ) as total_index, (select COUNT(IndStartTime) as manual_index FROM dtl_index  where   DATE_FORMAT(IndStartTime, '%b')=DATE_FORMAT('"
+				dailyIndexRate = " select total_index,manual_index,auto_index,draft_sent from ((select COUNT(IndStartTime) as total_index FROM dtl_index  where   DATE_FORMAT(IndStartTime, '%b')=DATE_FORMAT('"+ monthDate	+ "', '%b') and IndStartTime IS NOT NULL ) as total_index, (select COUNT(IndStartTime) as manual_index FROM dtl_index  where   DATE_FORMAT(IndStartTime, '%b')=DATE_FORMAT('"
 						+ monthDate
 						+ "', '%b')  and IndStartTime IS NOT NULL and IndStartUser!='Service' and IndStartUser IS NOT NULL ) as manual_index,(select COUNT(IndStartTime) as auto_index FROM dtl_index  where   DATE_FORMAT(IndStartTime, '%b')=DATE_FORMAT('"
 						+ monthDate
@@ -104,6 +102,69 @@ public class EmailTriggerJob {
 
 			}
 			buf.append("</table>");
+			buf.append("</br><b>Monthly Wise Index Type Summary Report: </b></br> <table border='1'>" + "<tr>"
+					+ "<th>Month</th><th>NSI</th>" + "<th>RSI</th>" + "<th>COR</th>"
+					+ "<th>CORF</th><th>DAP</th><th>QRS</th><th>CRS</th><th>COM</th><th>CERT</th><th>TOTAL INDEX</th></tr>");
+			int NSI_COUNT = 0, RSI_COUNT = 0, COR_COUNT = 0, CORF_COUNT = 0, DAP_COUNT = 0, QRS_COUNT = 0,
+					CRS_COUNT = 0, COM_COUNT = 0, CERT_COUNT = 0,TOTAL_INDEX=0;
+
+			Calendar currentDateTime = Calendar.getInstance();
+			currentDateTime.add(Calendar.MONTH, 0);
+			Calendar calmDate = Calendar.getInstance();
+			calmDate.set(2017, 8, 16); // October 16th 2017
+			while (!calmDate.getTime().after(currentDateTime.getTime())) {
+				calmDate.add(Calendar.MONTH, 1);
+				Date getmonth = calmDate.getTime();
+			String		monthDate = util_connection.getFormattedDate(getmonth);
+
+				dailyIndexRate = "select COUNT(IndStartTime) as total_index,count(index_type) as count,index_type as index_type from dtl_index where DATE_FORMAT(si_received, '%b')=DATE_FORMAT('"+ monthDate	+ "', '%b')  group by index_type";
+				res = st.executeQuery(dailyIndexRate);
+				String monthName ="";
+				while (res.next()) {
+
+					TOTAL_INDEX += Integer.parseInt(res.getString("total_index"));
+						if (res.getString("index_type").equals("NSI"))
+							NSI_COUNT += Integer.parseInt(res.getString("count"));
+						else if (res.getString("index_type").equals("RSI"))
+							RSI_COUNT += Integer.parseInt(res.getString("count"));
+						else if (res.getString("index_type").equals("COR"))
+							COR_COUNT += Integer.parseInt(res.getString("count"));
+						else if (res.getString("index_type").equals("CORF"))
+							CORF_COUNT += Integer.parseInt(res.getString("count"));
+						else if (res.getString("index_type").equals("DAP"))
+							DAP_COUNT += Integer.parseInt(res.getString("count"));
+						else if (res.getString("index_type").equals("QRS"))
+							QRS_COUNT += Integer.parseInt(res.getString("count"));
+						else if (res.getString("index_type").equals("CRS"))
+							CRS_COUNT += Integer.parseInt(res.getString("count"));
+						else if (res.getString("index_type").equals("COM"))
+							COM_COUNT += Integer.parseInt(res.getString("count"));
+						else if (res.getString("index_type").equals("CERT"))
+							CERT_COUNT += Integer.parseInt(res.getString("count"));				
+
+						monthName=formatter.format(getmonth);
+				}
+					buf.append("<tr><td>").append(monthName).append("</td><td>").append(NSI_COUNT)
+							.append("</td><td>").append(RSI_COUNT).append("</td><td>").append(COR_COUNT)
+							.append("</td><td>").append(CORF_COUNT).append("</td><td>").append(DAP_COUNT)
+							.append("</td><td>").append(QRS_COUNT).append("</td><td>").append(CRS_COUNT)
+							.append("</td><td>").append(COM_COUNT).append("</td><td>").append(CERT_COUNT)
+							.append("</td><td>").append(TOTAL_INDEX).append("</td></tr>");
+					NSI_COUNT = 0;
+					RSI_COUNT = 0;
+					COR_COUNT = 0;
+					CORF_COUNT = 0;
+					DAP_COUNT = 0;
+					QRS_COUNT = 0;
+					CRS_COUNT = 0;
+					COM_COUNT = 0;
+					CERT_COUNT = 0;
+					TOTAL_INDEX = 0;
+				
+
+				
+			}
+			buf.append("</table></br>");
 
 			buf.append("</br><b>Weekly Wise Summary Report: </b></br> <table border='1'>" + "<tr>"
 					+ "<th>Week</th><th>Total Index</th>" + "<th>Manual Index</th>" + "<th>Auto Index</th>"
@@ -120,7 +181,7 @@ public class EmailTriggerJob {
 			startw.setTime(startDateWise);
 			Calendar endw = Calendar.getInstance();
 			endw.setTime(endDateWise);
-			endw.add(Calendar.DATE, -1);
+			endw.add(Calendar.DATE, 0);
 			int WEEK_OF_YEAR = 0;
 			for (Date date = startw.getTime(); startw.before(endw); startw.add(Calendar.DATE,
 					1), date = startw.getTime()) {
@@ -141,6 +202,7 @@ public class EmailTriggerJob {
 						+ "(SELECT COUNT(IndStartTime) as draft_sent FROM dtl_index where DATE(IndStartTime)='"
 						+ dayWiseDate
 						+ "' and status IN ('DRAFT SENT','DRAFT SENT WITH QUERY') and IndStartTime IS NOT NULL and status IS NOT NULL) as draft_sent )";
+
 				res = st.executeQuery(dailyIndexRate);
 
 				while (res.next()) {
@@ -163,7 +225,7 @@ public class EmailTriggerJob {
 				}
 				int day_of_week = endw.get(Calendar.DAY_OF_WEEK)-1;
 				int tempweek= endw.get(Calendar.WEEK_OF_YEAR);
-				if (tempRate > 0 && tempRate == 7) {
+					if (tempRate > 0 && tempRate == 7) {
 				
 					tempRate = 0;
 					
@@ -176,7 +238,6 @@ public class EmailTriggerJob {
 					wdraft_sent = 0;
 
 				}		else if(WEEK_OF_YEAR==tempweek && tempRate==day_of_week){
-				
 					tempRate = 0;
 						buf.append("<tr><td>").append(WEEK_OF_YEAR).append("</td><td>").append(wtotal_index)
 							.append("</td><td>").append(wmanual_index).append("</td><td>").append(wauto_index)
@@ -194,14 +255,15 @@ public class EmailTriggerJob {
 					+ "<th>Week</th><th>NSI</th>" + "<th>RSI</th>" + "<th>COR</th>"
 					+ "<th>CORF</th><th>DAP</th><th>QRS</th><th>CRS</th><th>COM</th><th>CERT</th><th>TOTAL INDEX</th></tr>");
 
-			int NSI_COUNT = 0, RSI_COUNT = 0, COR_COUNT = 0, CORF_COUNT = 0, DAP_COUNT = 0, QRS_COUNT = 0,
-					CRS_COUNT = 0, COM_COUNT = 0, CERT_COUNT = 0;
+		
 			tempRate = 1;
 			wtotal_index = 0;
 			Calendar startindex = Calendar.getInstance();
 			startindex.setTime(startDateWise);
+		
 			Calendar endindex = Calendar.getInstance();
 			endindex.setTime(endDateWise);
+			endindex.add(Calendar.DATE, 0);
 			for (Date date = startindex.getTime(); startindex.before(endindex); startindex.add(Calendar.DATE,
 					1), date = startindex.getTime()) {
 				tempRate++;
