@@ -730,10 +730,10 @@ public class EmailTriggerJob {
 				subject = "Log_History";
 				_dapFileName = "Log_History" + CurrDate;
 				lastthreeDayDate = lastthreeDayDate + " " + _rtp6StTime;
-				todayDate = todayDate + " " + _rtp6EndTime;
-				content = "Log_History From Date:" + lastthreeDayDate + " To Date:" + todayDate;
+				yesterdayDate = yesterdayDate + " " + _rtp6EndTime;
+				content = "Log_History From Date:" + lastthreeDayDate + " To Date:" + yesterdayDate;
 				dailyIndexRate = "select index_type,book_no,ssc_log,log_type, created_user,created_date from tbl_input_log_history where created_date between '"
-						+ lastthreeDayDate + "'  AND '" + todayDate + "' order by created_date desc";
+						+ lastthreeDayDate + "'  AND '" + yesterdayDate + "' order by created_date desc";
 				res = st.executeQuery(dailyIndexRate);
 				Thread.sleep(10);
 

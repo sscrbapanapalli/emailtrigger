@@ -51,7 +51,7 @@ public class Util_Connection {
 	
 	private Date formattedLastThree() {
 	    final Calendar cal = Calendar.getInstance();
-	    cal.add(Calendar.DATE, -2);
+	    cal.add(Calendar.DATE, -3);
 	    return cal.getTime();
 	}
 	
