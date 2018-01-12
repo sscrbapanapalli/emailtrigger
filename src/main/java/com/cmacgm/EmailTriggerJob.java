@@ -607,7 +607,7 @@ public class EmailTriggerJob {
 			yesterdayDate = util_connection.getLastMondayDateddMMyyyy();
 			yesterdayDate = yesterdayDate + " 06:31:00";
 			todayDate = todayDate + " 06:30:00";
-			dailyIndexRate = "select e.book_no as Booking_No, e.category as Error_Category,e.sub_category as Error_Sub_Category,e.error_person as Error_Addressed_By, e.error_marked_on as Error_Reported_Date, a.book_no,a.audit_start_user as Audited_By ,a.audit_end_user as Audit_Completed_By from dtl_audit_errors e, dtl_audit a where a.book_no=e.book_no and e.error_marked_on between '"
+			dailyIndexRate = "select e.book_no as Booking_No, e.category as Error_Category,e.sub_category as Error_Sub_Category,e.error_person as Error_Addressed_By, e.error_marked_on as Error_Reported_Date, a.book_no,a.audit_start_user as Audited_By ,a.audit_end_user as Audit_Completed_By,a.audit_end_time as Audit_Completed_Time from dtl_audit_errors e, dtl_audit a where a.book_no=e.book_no and e.error_marked_on between '"
 					+ yesterdayDate + "'  AND '" + todayDate + "' order by e.error_marked_on desc";
 			res = st.executeQuery(dailyIndexRate);
 
@@ -649,6 +649,7 @@ public class EmailTriggerJob {
 			connection = util_connection.GetConnection();
 			Statement st = (Statement) connection.createStatement();
 			String yesterdayDate = "";
+			String lastthreeDayDate="";
 			String todayDate = "";
 			ResultSet res = null;
 			String CurrDate = util_connection.getFormatDate();
@@ -667,9 +668,9 @@ public class EmailTriggerJob {
 			String _rpt4 = configProp.getProperty("scheduledReport4");
 			String _rpt5 = configProp.getProperty("scheduledReport5");
 			String _rpt6 = configProp.getProperty("scheduledReport6");
-			String _rpt7 = configProp.getProperty("scheduledReport7");
+		 //	String _rpt7 = configProp.getProperty("scheduledReport7");
 			String _rptm6 = configProp.getProperty("scheduledReportm6");
-			String _rptm7 = configProp.getProperty("scheduledReportm7");
+			//String _rptm7 = configProp.getProperty("scheduledReportm7");
 
 			String _rtp1StTime = configProp.getProperty("ScheduledRpt1StartTime");
 			String _rtp1EndTime = configProp.getProperty("ScheduledRpt1EndTime");
@@ -689,14 +690,15 @@ public class EmailTriggerJob {
 			String _rtp6StTime = configProp.getProperty("ScheduledRpt6StartTime");
 			String _rtp6EndTime = configProp.getProperty("ScheduledRpt6EndTime");
 
-			String _rtp7StTime = configProp.getProperty("ScheduledRpt7StartTime");
-			String _rtp7EndTime = configProp.getProperty("ScheduledRpt7EndTime");
+			//String _rtp7StTime = configProp.getProperty("ScheduledRpt7StartTime");
+			//String _rtp7EndTime = configProp.getProperty("ScheduledRpt7EndTime");
 
 			_dapFileName = "DAP_Report_" + CurrDate;
 			String subject = "";
 			String content = "";
 			boolean status = false;
 			yesterdayDate = util_connection.formmatedDate();
+			lastthreeDayDate = util_connection.formattedLastThreeDayDate();
 			todayDate = util_connection.todayFormattedDate();
 			subject = "DAP REPORT";
 			if (HH.equals(_rpt1) && MM.equals("00")) {
@@ -727,11 +729,11 @@ public class EmailTriggerJob {
 			} else if (HH.equals(_rpt6) && MM.equals(_rptm6)) {
 				subject = "Log_History";
 				_dapFileName = "Log_History" + CurrDate;
-				yesterdayDate = yesterdayDate + " " + _rtp6StTime;
+				lastthreeDayDate = lastthreeDayDate + " " + _rtp6StTime;
 				todayDate = todayDate + " " + _rtp6EndTime;
-				content = "Log_History From Date:" + yesterdayDate + " To Date:" + todayDate;
+				content = "Log_History From Date:" + lastthreeDayDate + " To Date:" + todayDate;
 				dailyIndexRate = "select index_type,book_no,ssc_log,log_type, created_user,created_date from tbl_input_log_history where created_date between '"
-						+ yesterdayDate + "'  AND '" + todayDate + "' order by created_date desc";
+						+ lastthreeDayDate + "'  AND '" + todayDate + "' order by created_date desc";
 				res = st.executeQuery(dailyIndexRate);
 				Thread.sleep(10);
 
@@ -740,7 +742,8 @@ public class EmailTriggerJob {
 				Thread.sleep(10);
 				// SendEmailAttachment("Current_Indexing_Status");
 				SendScheduledReportMailwithAttachement(subject, content);
-			} else if (HH.equals(_rpt7) && MM.equals(_rptm7)) {
+			}
+				/*else if (HH.equals(_rpt7) && MM.equals(_rptm7)) {
 				subject = "Log_History";
 				_dapFileName = "Log_History" + CurrDate;
 				yesterdayDate = todayDate + " " + _rtp7StTime;
@@ -756,7 +759,7 @@ public class EmailTriggerJob {
 				Thread.sleep(10);
 				// SendEmailAttachment("Current_Indexing_Status");
 				SendScheduledReportMailwithAttachement(subject, content);
-			}
+			}*/
 			if (status) {
 				dailyIndexRate = "Select index_type,book_no,country_id,country_name,brand,customer_name,agency_code,vessel_name,voyage_code,service_code,saildate,pol,pod,zone,sub_zone,edi,si_received,sla_cutoff_time,IndStartUser,IndStartTime,IndEndTime,status,hold_status,created_date,cntnr_lnkd,booking_status,bl_status,release_action"
 						+ " from dtl_index where status = 'DRAFT-APPROVAL' and id!='' and IndStartTime  between '"

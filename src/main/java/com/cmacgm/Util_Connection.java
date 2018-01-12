@@ -49,12 +49,33 @@ public class Util_Connection {
 	    return cal.getTime();
 	}
 	
+	private Date formattedLastThree() {
+	    final Calendar cal = Calendar.getInstance();
+	    cal.add(Calendar.DATE, -2);
+	    return cal.getTime();
+	}
+	
 	public String formmatedDate(){
 		try {		  
 
 		    SimpleDateFormat dmyFormat = new SimpleDateFormat("yyyy-MM-dd");
 
 		    String dmy = dmyFormat.format(yesterday());
+
+		   return dmy;
+		} catch (Exception exp) {
+		    exp.printStackTrace();
+		}
+		return null;
+	
+	}
+	
+	public String formattedLastThreeDayDate(){
+		try {		  
+
+		    SimpleDateFormat dmyFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+		    String dmy = dmyFormat.format(formattedLastThree());
 
 		   return dmy;
 		} catch (Exception exp) {
