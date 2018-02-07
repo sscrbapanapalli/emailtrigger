@@ -28,7 +28,7 @@ import jxl.write.WritableWorkbook;
 public class EmailTriggerJob {
 
 	private Properties configProp = new Properties();
-	private String pathToStore = "C:\\testing\\";
+	private String pathToStore = "/var/emailtrigger/reports/";
 	private String startDate = "2017-10-16";
 	private static String _dapFileName = "";
 
@@ -56,10 +56,12 @@ public class EmailTriggerJob {
 			String dayWiseDate = "";
 			String dailyIndexRate = null;
 			ResultSet res = null;
+		 	String year_YYYY = "";
 			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+			SimpleDateFormat yearFormatter = new SimpleDateFormat("yyyy");
 
 			buf.append("<b>Monthly Wise Summary Report: </b></br> <table border='1'>" + "<tr>"
-					+ "<th>Month</th><th>Total Index</th>" + "<th>Manual Index</th>" + "<th>Auto Index</th>"
+					+ "<th>Month - Year</th><th>Total Index</th>" + "<th>Manual Index</th>" + "<th>Auto Index</th>"
 					+ "<th>Draft Sent</th></tr>");
 			Calendar calm = Calendar.getInstance();
 			calm.set(2017, 8, 16); // October 16th 2017
@@ -87,7 +89,8 @@ public class EmailTriggerJob {
 					String auto_index = res.getString("auto_index");
 					String draft_sent = res.getString("draft_sent");
 					formatter = new SimpleDateFormat("MMMM");
-					String monthName = formatter.format(getmonth);
+					String monthName = formatter.format(getmonth);				
+				     year_YYYY = yearFormatter.format(getmonth);
 					/*
 					 * System.out.println("month_name:"+monthName);
 					 * System.out.println("total_index " +total_index);
@@ -95,7 +98,7 @@ public class EmailTriggerJob {
 					 * System.out.println("auto_index " +auto_index);
 					 * System.out.println("draft_sent " +draft_sent);
 					 */
-					buf.append("<tr><td>").append(monthName).append("</td><td>").append(total_index).append("</td><td>")
+					buf.append("<tr><td>").append(monthName+" - "+year_YYYY).append("</td><td>").append(total_index).append("</td><td>")
 							.append(manual_index).append("</td><td>").append(auto_index).append("</td><td>")
 							.append(draft_sent).append("</td></tr>");
 				}
@@ -103,7 +106,7 @@ public class EmailTriggerJob {
 			}
 			buf.append("</table>");
 			buf.append("</br><b>Monthly Wise Index Type Summary Report: </b></br> <table border='1'>" + "<tr>"
-					+ "<th>Month</th><th>NSI</th>" + "<th>RSI</th>" + "<th>COR</th>"
+					+ "<th>Month - Year</th><th>NSI</th>" + "<th>RSI</th>" + "<th>COR</th>"
 					+ "<th>CORF</th><th>DAP</th><th>QRS</th><th>CRS</th><th>COM</th><th>CERT</th><th>TOTAL INDEX</th></tr>");
 			int NSI_COUNT = 0, RSI_COUNT = 0, COR_COUNT = 0, CORF_COUNT = 0, DAP_COUNT = 0, QRS_COUNT = 0,
 					CRS_COUNT = 0, COM_COUNT = 0, CERT_COUNT = 0,TOTAL_INDEX=0;
@@ -143,8 +146,9 @@ public class EmailTriggerJob {
 							CERT_COUNT += Integer.parseInt(res.getString("count"));				
 
 						monthName=formatter.format(getmonth);
+						year_YYYY = yearFormatter.format(getmonth);
 				}
-					buf.append("<tr><td>").append(monthName).append("</td><td>").append(NSI_COUNT)
+					buf.append("<tr><td>").append(monthName+" - "+year_YYYY).append("</td><td>").append(NSI_COUNT)
 							.append("</td><td>").append(RSI_COUNT).append("</td><td>").append(COR_COUNT)
 							.append("</td><td>").append(CORF_COUNT).append("</td><td>").append(DAP_COUNT)
 							.append("</td><td>").append(QRS_COUNT).append("</td><td>").append(CRS_COUNT)
@@ -167,7 +171,7 @@ public class EmailTriggerJob {
 			buf.append("</table></br>");
 
 			buf.append("</br><b>Weekly Wise Summary Report: </b></br> <table border='1'>" + "<tr>"
-					+ "<th>Week</th><th>Total Index</th>" + "<th>Manual Index</th>" + "<th>Auto Index</th>"
+					+ "<th>Week - Year</th><th>Total Index</th>" + "<th>Manual Index</th>" + "<th>Auto Index</th>"
 					+ "<th>Draft Sent</th></tr>");
 			int wtotal_index = 0;
 			int wmanual_index = 0;
@@ -175,6 +179,7 @@ public class EmailTriggerJob {
 			int wdraft_sent = 0;
 			int tempRate = 1;
 			formatter = new SimpleDateFormat("yyyy-MM-dd");
+			 yearFormatter = new SimpleDateFormat("yyyy");
 			Date startDateWise = formatter.parse(startDate);
 			Date endDateWise = formatter.parse(util_connection.getFormattedDate(new Date()));
 			Calendar startw = Calendar.getInstance();
@@ -187,7 +192,7 @@ public class EmailTriggerJob {
 					1), date = startw.getTime()) {
 				tempRate++;
 				WEEK_OF_YEAR = startw.get(Calendar.WEEK_OF_YEAR);
-		
+				year_YYYY = yearFormatter.format(date);
 			
 
 				dayWiseDate = util_connection.getFormattedDate(date);
@@ -229,7 +234,7 @@ public class EmailTriggerJob {
 				
 					tempRate = 0;
 					
-					buf.append("<tr><td>").append(WEEK_OF_YEAR).append("</td><td>").append(wtotal_index)
+					buf.append("<tr><td>").append(WEEK_OF_YEAR+" - "+year_YYYY).append("</td><td>").append(wtotal_index)
 							.append("</td><td>").append(wmanual_index).append("</td><td>").append(wauto_index)
 							.append("</td><td>").append(wdraft_sent).append("</td></tr>");
 					wtotal_index = 0;
@@ -239,7 +244,7 @@ public class EmailTriggerJob {
 
 				}		else if(WEEK_OF_YEAR==tempweek && tempRate==day_of_week){
 					tempRate = 0;
-						buf.append("<tr><td>").append(WEEK_OF_YEAR).append("</td><td>").append(wtotal_index)
+						buf.append("<tr><td>").append(WEEK_OF_YEAR+" - "+year_YYYY).append("</td><td>").append(wtotal_index)
 							.append("</td><td>").append(wmanual_index).append("</td><td>").append(wauto_index)
 							.append("</td><td>").append(wdraft_sent).append("</td></tr>");
 					wtotal_index = 0;
@@ -252,7 +257,7 @@ public class EmailTriggerJob {
 			buf.append("</table></br>");
 
 			buf.append("</br><b>Weekly Wise Index Type Summary Report: </b></br> <table border='1'>" + "<tr>"
-					+ "<th>Week</th><th>NSI</th>" + "<th>RSI</th>" + "<th>COR</th>"
+					+ "<th>Week - Year</th><th>NSI</th>" + "<th>RSI</th>" + "<th>COR</th>"
 					+ "<th>CORF</th><th>DAP</th><th>QRS</th><th>CRS</th><th>COM</th><th>CERT</th><th>TOTAL INDEX</th></tr>");
 
 		
@@ -268,7 +273,7 @@ public class EmailTriggerJob {
 					1), date = startindex.getTime()) {
 				tempRate++;
 				WEEK_OF_YEAR = startindex.get(Calendar.WEEK_OF_YEAR);
-			
+				year_YYYY = yearFormatter.format(date);
 				dayWiseDate = util_connection.getFormattedDate(date);
 
 				dailyIndexRate = "select COUNT(IndStartTime) as total_index,count(index_type) as count,index_type as index_type from dtl_index where DATE(si_received)='"
@@ -307,7 +312,7 @@ public class EmailTriggerJob {
 						 
 
 					tempRate = 0;
-					buf.append("<tr><td>").append(WEEK_OF_YEAR).append("</td><td>").append(NSI_COUNT)
+					buf.append("<tr><td>").append(WEEK_OF_YEAR+" - "+year_YYYY).append("</td><td>").append(NSI_COUNT)
 							.append("</td><td>").append(RSI_COUNT).append("</td><td>").append(COR_COUNT)
 							.append("</td><td>").append(CORF_COUNT).append("</td><td>").append(DAP_COUNT)
 							.append("</td><td>").append(QRS_COUNT).append("</td><td>").append(CRS_COUNT)
@@ -327,7 +332,7 @@ public class EmailTriggerJob {
 				}else if(WEEK_OF_YEAR==tempweek && tempRate==day_of_week){
 
 					tempRate = 0;
-					buf.append("<tr><td>").append(WEEK_OF_YEAR).append("</td><td>").append(NSI_COUNT)
+					buf.append("<tr><td>").append(WEEK_OF_YEAR+" - "+year_YYYY).append("</td><td>").append(NSI_COUNT)
 							.append("</td><td>").append(RSI_COUNT).append("</td><td>").append(COR_COUNT)
 							.append("</td><td>").append(CORF_COUNT).append("</td><td>").append(DAP_COUNT)
 							.append("</td><td>").append(QRS_COUNT).append("</td><td>").append(CRS_COUNT)
