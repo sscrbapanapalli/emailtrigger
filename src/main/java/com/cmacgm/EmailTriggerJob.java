@@ -29,12 +29,14 @@ public class EmailTriggerJob {
 
 	private Properties configProp = new Properties();
 	private String pathToStore = "/var/emailtrigger/reports/";
+	               
 	private String startDate = "2017-10-16";
 	private static String _dapFileName = "";
+                    	
 
 	@Scheduled(cron = "${cronExpressionHtml}")
 	public void JupiterRecordAlert() throws SQLException {
-
+		
 		Connection connection = null;
 		InputStream in = this.getClass().getClassLoader().getResourceAsStream("config.properties");
 		try {
@@ -54,7 +56,7 @@ public class EmailTriggerJob {
 			buf.append("<html><body><b>Job Last Run Time: </b>" + util_connection.getFormatDate() + "</br>");
 
 			String dayWiseDate = "";
-			String dailyIndexRate = null;
+			String dailyIndexRate = null,dtl_extended_index=null;
 			ResultSet res = null;
 		 	String year_YYYY = "";
 			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
@@ -107,9 +109,10 @@ public class EmailTriggerJob {
 			buf.append("</table>");
 			buf.append("</br><b>Monthly Wise Index Type Summary Report: </b></br> <table border='1'>" + "<tr>"
 					+ "<th>Month - Year</th><th>NSI</th>" + "<th>RSI</th>" + "<th>COR</th>"
-					+ "<th>CORF</th><th>DAP</th><th>QRS</th><th>CRS</th><th>COM</th><th>CERT</th><th>TOTAL INDEX</th></tr>");
+					+ "<th>CORF</th><th>DAP</th><th>QRS</th><th>CRS</th><th>COM</th><th>CERT</th><th>CORA</th><th>NSIA</th><th>RSIA</th><th>QRSA</th><th>Junk</th><th>Others</th><th>TOTAL INDEX</th></tr>");
 			int NSI_COUNT = 0, RSI_COUNT = 0, COR_COUNT = 0, CORF_COUNT = 0, DAP_COUNT = 0, QRS_COUNT = 0,
-					CRS_COUNT = 0, COM_COUNT = 0, CERT_COUNT = 0,TOTAL_INDEX=0;
+					CRS_COUNT = 0, COM_COUNT = 0, CERT_COUNT = 0,TOTAL_INDEX=0,
+							CORA_COUNT=0,NSIA_COUNT = 0, RSIA_COUNT = 0, QRSA_COUNT = 0,Junk_INDEX=0,Others_INDEX=0;
 
 			Calendar currentDateTime = Calendar.getInstance();
 			currentDateTime.add(Calendar.MONTH, 0);
@@ -148,11 +151,32 @@ public class EmailTriggerJob {
 						monthName=formatter.format(getmonth);
 						year_YYYY = yearFormatter.format(getmonth);
 				}
+				dtl_extended_index="select  COUNT(created_date) as count ,bookingtype as booking_type from dtl_extended_index  where   DATE_FORMAT(created_date, '%b')=DATE_FORMAT('"+ monthDate	+ "', '%b')  Group BY bookingtype";
+				res = st.executeQuery(dtl_extended_index);
+				
+				while (res.next()) {						
+						if (res.getString("booking_type").equals("CORA"))
+							CORA_COUNT += Integer.parseInt(res.getString("count"));
+						else if (res.getString("booking_type").equals("Junk"))
+							Junk_INDEX += Integer.parseInt(res.getString("count"));
+						else if (res.getString("booking_type").equals("NSIA"))
+							NSIA_COUNT += Integer.parseInt(res.getString("count"));
+						else if (res.getString("booking_type").equals("Others"))
+							Others_INDEX += Integer.parseInt(res.getString("count"));
+						else if (res.getString("booking_type").equals("QRSA"))
+							QRSA_COUNT += Integer.parseInt(res.getString("count"));
+						else if (res.getString("booking_type").equals("RSIA"))
+							RSIA_COUNT += Integer.parseInt(res.getString("count"));
+						
+				}
 					buf.append("<tr><td>").append(monthName+" - "+year_YYYY).append("</td><td>").append(NSI_COUNT)
 							.append("</td><td>").append(RSI_COUNT).append("</td><td>").append(COR_COUNT)
 							.append("</td><td>").append(CORF_COUNT).append("</td><td>").append(DAP_COUNT)
 							.append("</td><td>").append(QRS_COUNT).append("</td><td>").append(CRS_COUNT)
 							.append("</td><td>").append(COM_COUNT).append("</td><td>").append(CERT_COUNT)
+							.append("</td><td>").append(CORA_COUNT).append("</td><td>").append(NSIA_COUNT)
+							.append("</td><td>").append(RSIA_COUNT).append("</td><td>").append(QRSA_COUNT)
+							.append("</td><td>").append(Junk_INDEX).append("</td><td>").append(Others_INDEX)
 							.append("</td><td>").append(TOTAL_INDEX).append("</td></tr>");
 					NSI_COUNT = 0;
 					RSI_COUNT = 0;
@@ -163,6 +187,12 @@ public class EmailTriggerJob {
 					CRS_COUNT = 0;
 					COM_COUNT = 0;
 					CERT_COUNT = 0;
+					CORA_COUNT=0;
+					NSIA_COUNT=0;
+					RSIA_COUNT=0;
+					QRSA_COUNT=0;
+					Junk_INDEX=0;
+					Others_INDEX=0;
 					TOTAL_INDEX = 0;
 				
 
@@ -258,7 +288,7 @@ public class EmailTriggerJob {
 
 			buf.append("</br><b>Weekly Wise Index Type Summary Report: </b></br> <table border='1'>" + "<tr>"
 					+ "<th>Week - Year</th><th>NSI</th>" + "<th>RSI</th>" + "<th>COR</th>"
-					+ "<th>CORF</th><th>DAP</th><th>QRS</th><th>CRS</th><th>COM</th><th>CERT</th><th>TOTAL INDEX</th></tr>");
+					+ "<th>CORF</th><th>DAP</th><th>QRS</th><th>CRS</th><th>COM</th><th>CERT</th><th>CORA</th><th>NSIA</th><th>RSIA</th><th>QRSA</th><th>Junk</th><th>Others</th><th>TOTAL INDEX</th></tr>");
 
 		
 			tempRate = 1;
@@ -306,6 +336,27 @@ public class EmailTriggerJob {
 					}
 
 				}
+				
+				dtl_extended_index="select  COUNT(created_date) as count ,bookingtype as booking_type from dtl_extended_index  where  DATE(created_date)='"+ dayWiseDate + "'  Group BY bookingtype";
+				res = st.executeQuery(dtl_extended_index);
+				
+				while (res.next()) {		
+					if (tempRate > 0 && tempRate <= 7) {
+						if (res.getString("booking_type").equals("CORA"))
+							CORA_COUNT += Integer.parseInt(res.getString("count"));
+						else if (res.getString("booking_type").equals("Junk"))
+							Junk_INDEX += Integer.parseInt(res.getString("count"));
+						else if (res.getString("booking_type").equals("NSIA"))
+							NSIA_COUNT += Integer.parseInt(res.getString("count"));
+						else if (res.getString("booking_type").equals("Others"))
+							Others_INDEX += Integer.parseInt(res.getString("count"));
+						else if (res.getString("booking_type").equals("QRSA"))
+							QRSA_COUNT += Integer.parseInt(res.getString("count"));
+						else if (res.getString("booking_type").equals("RSIA"))
+							RSIA_COUNT += Integer.parseInt(res.getString("count"));
+					}
+						
+				}
 				int day_of_week = endindex.get(Calendar.DAY_OF_WEEK)-1;
 				int tempweek= endw.get(Calendar.WEEK_OF_YEAR);
 				if (tempRate > 0 && tempRate == 7) {
@@ -317,6 +368,9 @@ public class EmailTriggerJob {
 							.append("</td><td>").append(CORF_COUNT).append("</td><td>").append(DAP_COUNT)
 							.append("</td><td>").append(QRS_COUNT).append("</td><td>").append(CRS_COUNT)
 							.append("</td><td>").append(COM_COUNT).append("</td><td>").append(CERT_COUNT)
+							.append("</td><td>").append(CORA_COUNT).append("</td><td>").append(NSIA_COUNT)
+							.append("</td><td>").append(RSIA_COUNT).append("</td><td>").append(QRSA_COUNT)
+							.append("</td><td>").append(Junk_INDEX).append("</td><td>").append(Others_INDEX)
 							.append("</td><td>").append(wtotal_index).append("</td></tr>");
 					NSI_COUNT = 0;
 					RSI_COUNT = 0;
@@ -327,6 +381,12 @@ public class EmailTriggerJob {
 					CRS_COUNT = 0;
 					COM_COUNT = 0;
 					CERT_COUNT = 0;
+					CORA_COUNT=0;
+					NSIA_COUNT=0;
+					RSIA_COUNT=0;
+					QRSA_COUNT=0;
+					Junk_INDEX=0;
+					Others_INDEX=0;
 					wtotal_index = 0;
 
 				}else if(WEEK_OF_YEAR==tempweek && tempRate==day_of_week){
@@ -337,6 +397,9 @@ public class EmailTriggerJob {
 							.append("</td><td>").append(CORF_COUNT).append("</td><td>").append(DAP_COUNT)
 							.append("</td><td>").append(QRS_COUNT).append("</td><td>").append(CRS_COUNT)
 							.append("</td><td>").append(COM_COUNT).append("</td><td>").append(CERT_COUNT)
+							.append("</td><td>").append(CORA_COUNT).append("</td><td>").append(NSIA_COUNT)
+							.append("</td><td>").append(RSIA_COUNT).append("</td><td>").append(QRSA_COUNT)
+							.append("</td><td>").append(Junk_INDEX).append("</td><td>").append(Others_INDEX)
 							.append("</td><td>").append(wtotal_index).append("</td></tr>");
 					NSI_COUNT = 0;
 					RSI_COUNT = 0;
@@ -347,6 +410,12 @@ public class EmailTriggerJob {
 					CRS_COUNT = 0;
 					COM_COUNT = 0;
 					CERT_COUNT = 0;
+					CORA_COUNT=0;
+					NSIA_COUNT=0;
+					RSIA_COUNT=0;
+					QRSA_COUNT=0;
+					Junk_INDEX=0;
+					Others_INDEX=0;
 					wtotal_index = 0;
 				}
 			}
@@ -404,7 +473,7 @@ public class EmailTriggerJob {
 			endWeek.setTime(endDateWise);
 			buf.append("</br><b>Day Wise Index Type Summary Report: </b></br> <table border='1'>" + "<tr>"
 					+ "<th>Date</th><th>NSI</th>" + "<th>RSI</th>" + "<th>COR</th>"
-					+ "<th>CORF</th><th>DAP</th><th>QRS</th><th>CRS</th><th>COM</th><th>CERT</th><th>TOTAL INDEX</th></tr>");
+					+ "<th>CORF</th><th>DAP</th><th>QRS</th><th>CRS</th><th>COM</th><th>CERT</th><th>CORA</th><th>NSIA</th><th>RSIA</th><th>QRSA</th><th>Junk</th><th>Others</th><th>TOTAL INDEX</th></tr>");
 			for (Date date = startWeek.getTime(); startWeek.before(endWeek); startWeek.add(Calendar.DATE,
 					1), date = startWeek.getTime()) {
 				dayWiseDate = util_connection.getFormattedDate(date);
@@ -421,6 +490,12 @@ public class EmailTriggerJob {
 				CRS_COUNT = 0;
 				COM_COUNT = 0;
 				CERT_COUNT = 0;
+				CORA_COUNT=0;
+				NSIA_COUNT=0;
+				RSIA_COUNT=0;
+				QRSA_COUNT=0;
+				Junk_INDEX=0;
+				Others_INDEX=0;
 				wtotal_index = 0;
 				while (res.next()) {
 
@@ -444,10 +519,33 @@ public class EmailTriggerJob {
 					else if (res.getString("index_type").equals("CERT"))
 						CERT_COUNT += Integer.parseInt(res.getString("count"));
 				}
+				dtl_extended_index="select  COUNT(created_date) as count ,bookingtype as booking_type from dtl_extended_index  where  DATE(created_date)='"+ dayWiseDate + "'  Group BY bookingtype";
+				res = st.executeQuery(dtl_extended_index);
+				
+				while (res.next()) {	
+			
+						if (res.getString("booking_type").equals("CORA"))
+							CORA_COUNT += Integer.parseInt(res.getString("count"));
+						else if (res.getString("booking_type").equals("Junk"))
+							Junk_INDEX += Integer.parseInt(res.getString("count"));
+						else if (res.getString("booking_type").equals("NSIA"))
+							NSIA_COUNT += Integer.parseInt(res.getString("count"));
+						else if (res.getString("booking_type").equals("Others"))
+							Others_INDEX += Integer.parseInt(res.getString("count"));
+						else if (res.getString("booking_type").equals("QRSA"))
+							QRSA_COUNT += Integer.parseInt(res.getString("count"));
+						else if (res.getString("booking_type").equals("RSIA"))
+							RSIA_COUNT += Integer.parseInt(res.getString("count"));
+				
+						
+				}
 				buf.append("<tr><td>").append(dayWiseDate).append("</td><td>").append(NSI_COUNT).append("</td><td>")
 						.append(RSI_COUNT).append("</td><td>").append(COR_COUNT).append("</td><td>").append(CORF_COUNT)
 						.append("</td><td>").append(DAP_COUNT).append("</td><td>").append(QRS_COUNT).append("</td><td>")
 						.append(CRS_COUNT).append("</td><td>").append(COM_COUNT).append("</td><td>").append(CERT_COUNT)
+						.append("</td><td>").append(CORA_COUNT).append("</td><td>").append(NSIA_COUNT)
+						.append("</td><td>").append(RSIA_COUNT).append("</td><td>").append(QRSA_COUNT)
+						.append("</td><td>").append(Junk_INDEX).append("</td><td>").append(Others_INDEX)
 						.append("</td><td>").append(wtotal_index).append("</td></tr>");
 				NSI_COUNT = 0;
 				RSI_COUNT = 0;
@@ -458,6 +556,12 @@ public class EmailTriggerJob {
 				CRS_COUNT = 0;
 				COM_COUNT = 0;
 				CERT_COUNT = 0;
+				CORA_COUNT=0;
+				NSIA_COUNT=0;
+				RSIA_COUNT=0;
+				QRSA_COUNT=0;
+				Junk_INDEX=0;
+				Others_INDEX=0;
 				wtotal_index = 0;
 
 			}

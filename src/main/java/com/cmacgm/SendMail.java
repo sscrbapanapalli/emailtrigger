@@ -207,8 +207,10 @@ public class SendMail extends HttpServlet {
 			String bccAddress = (String) props.get("emailsenderScheduledReports_BCC");
 			if(subject.trim().equals("Log_History"))
 			toAddress=(String) props.get("emailsenderlogReports_To");
-			if(subject.trim().equals("Audit_Report"))
+			if(subject.trim().equals("Audit_Report")){
 				toAddress=(String) props.get("emailsenderauditReports_To");
+			    ccAddress = (String) props.get("emailsenderauditReports_CC");
+			}
               if(fromAddress.isEmpty())
             	  return flag;
 			// tls enabled
