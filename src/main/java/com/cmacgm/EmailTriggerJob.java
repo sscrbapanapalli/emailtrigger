@@ -30,23 +30,24 @@ public class EmailTriggerJob {
 	private Properties configProp = new Properties();
 	private String pathToStore = "/var/emailtrigger/reports/";
 	               
-	private String startDate = "2017-10-16";
+
+	private  String startWeek = getSevenWeekBefore();
 	private static String _dapFileName = "";
-                    	
+  
+	public  String getSevenWeekBefore() {
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.WEEK_OF_YEAR, -7);
+		Date result = cal.getTime();		
+		Util_Connection util_connection = new Util_Connection();
+		startWeek = util_connection.getFormattedDate(result);
+		return startWeek;
+	}
 
 	@Scheduled(cron = "${cronExpressionHtml}")
 	public void JupiterRecordAlert() throws SQLException {
 		
 		Connection connection = null;
-		InputStream in = this.getClass().getClassLoader().getResourceAsStream("config.properties");
-		try {
-			configProp.load(in);
-			startDate = configProp.getProperty("startDate");
-			;
-		} catch (IOException e) {
-			System.out.println("IOException" + e);
-			throw new RuntimeException("config.properties not loaded properly");
-		}
+		
 		try {
 			Util_Connection util_connection = new Util_Connection();
 			connection = util_connection.GetConnection();
@@ -66,10 +67,10 @@ public class EmailTriggerJob {
 					+ "<th>Month - Year</th><th>Total Index</th>" + "<th>Manual Index</th>" + "<th>Auto Index</th>"
 					+ "<th>Draft Sent</th></tr>");
 			Calendar calm = Calendar.getInstance();
-			calm.set(2017, 8, 16); // October 16th 2017
+			calm.add(Calendar.MONTH, -7);
 
 			Calendar currentDate = Calendar.getInstance();
-			currentDate.add(Calendar.MONTH, 0);
+			currentDate.add(Calendar.MONTH, -1);
 			while (!calm.getTime().after(currentDate.getTime())) {
 				calm.add(Calendar.MONTH, 1);
 				Date getmonth = calm.getTime();
@@ -115,17 +116,20 @@ public class EmailTriggerJob {
 							CORA_COUNT=0,NSIA_COUNT = 0, RSIA_COUNT = 0, QRSA_COUNT = 0,Junk_INDEX=0,Others_INDEX=0;
 
 			Calendar currentDateTime = Calendar.getInstance();
-			currentDateTime.add(Calendar.MONTH, 0);
+			currentDateTime.add(Calendar.MONTH, -1);
 			Calendar calmDate = Calendar.getInstance();
-			calmDate.set(2017, 8, 16); // October 16th 2017
+			calmDate.add(Calendar.MONTH, -7);
 			while (!calmDate.getTime().after(currentDateTime.getTime())) {
 				calmDate.add(Calendar.MONTH, 1);
 				Date getmonth = calmDate.getTime();
+				String monthName ="";
+				monthName=formatter.format(getmonth);
+				year_YYYY = yearFormatter.format(getmonth);
 			String		monthDate = util_connection.getFormattedDate(getmonth);
 
 				dailyIndexRate = "select COUNT(IndStartTime) as total_index,count(index_type) as count,index_type as index_type from dtl_index where DATE_FORMAT(si_received, '%b')=DATE_FORMAT('"+ monthDate	+ "', '%b')  group by index_type";
 				res = st.executeQuery(dailyIndexRate);
-				String monthName ="";
+				
 				while (res.next()) {
 
 					TOTAL_INDEX += Integer.parseInt(res.getString("total_index"));
@@ -146,10 +150,8 @@ public class EmailTriggerJob {
 						else if (res.getString("index_type").equals("COM"))
 							COM_COUNT += Integer.parseInt(res.getString("count"));
 						else if (res.getString("index_type").equals("CERT"))
-							CERT_COUNT += Integer.parseInt(res.getString("count"));				
-
-						monthName=formatter.format(getmonth);
-						year_YYYY = yearFormatter.format(getmonth);
+							CERT_COUNT += Integer.parseInt(res.getString("count"));		
+					
 				}
 				dtl_extended_index="select  COUNT(created_date) as count ,bookingtype as booking_type from dtl_extended_index  where   DATE_FORMAT(created_date, '%b')=DATE_FORMAT('"+ monthDate	+ "', '%b')  Group BY bookingtype";
 				res = st.executeQuery(dtl_extended_index);
@@ -210,7 +212,7 @@ public class EmailTriggerJob {
 			int tempRate = 1;
 			formatter = new SimpleDateFormat("yyyy-MM-dd");
 			 yearFormatter = new SimpleDateFormat("yyyy");
-			Date startDateWise = formatter.parse(startDate);
+			Date startDateWise = formatter.parse(startWeek);
 			Date endDateWise = formatter.parse(util_connection.getFormattedDate(new Date()));
 			Calendar startw = Calendar.getInstance();
 			startw.setTime(startDateWise);
